@@ -13,7 +13,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -30,14 +29,14 @@ public class aXMLEncoder {
     }
 
     public byte[] encodeString(Context context, String xml) throws XmlPullParserException, IOException {
-        XmlPullParserFactory f=XmlPullParserFactory.newInstance();
+        XmlPullParserFactory f = XmlPullParserFactory.newInstance();
         f.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES,true);
         XmlPullParser p = f.newPullParser();
         p.setInput(new StringReader(xml));
         return encode(context,p);
     }
 
-    public byte[] encode(Context context, XmlPullParser p) throws XmlPullParserException, IOException {
+    private static byte[] encode(Context context, XmlPullParser p) throws XmlPullParserException, IOException {
         XmlChunk chunk = new XmlChunk(context);
         TagChunk current = null;
         for (int i=p.getEventType(); i!=XmlPullParser.END_DOCUMENT; i=p.next()) {
