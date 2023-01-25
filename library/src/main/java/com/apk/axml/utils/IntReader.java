@@ -7,9 +7,9 @@ import java.io.InputStream;
 
 public final class IntReader {
 
+	int m_position;
 	private InputStream m_stream;
 	private boolean m_bigEndian;
-	private int m_position;
 
 	public IntReader(InputStream stream,boolean bigEndian) {
 		reset(stream,bigEndian);
@@ -39,7 +39,7 @@ public final class IntReader {
         new DataInputStream(m_stream).readFully(b);
     }
 	public int readInt(int length) throws IOException {
-		if (length<0 || length>4) {
+		if (length < 0 || length > 4) {
 			throw new IllegalArgumentException();
 		}
 		int result=0;
@@ -91,10 +91,6 @@ public final class IntReader {
 	
 	public void skipInt() throws IOException {
 		skip(4);
-	}
-	
-	public int getPosition() {
-		return m_position;
 	}
 
 }

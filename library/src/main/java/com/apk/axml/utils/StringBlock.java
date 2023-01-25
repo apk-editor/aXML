@@ -41,10 +41,8 @@ public class StringBlock {
         }
         if (stylesOffset != 0) {
             int size = (chunkSize - stylesOffset);
-            if ((size % 4) != 0) {
-                throw new IOException("Style data size is not multiple of 4 (" + size + ").");
-            }
-            block.m_styles = reader.readIntArray(size / 4);
+            block.m_strings = new byte[size];
+            reader.readFully(block.m_strings);
         }
 
         return block;

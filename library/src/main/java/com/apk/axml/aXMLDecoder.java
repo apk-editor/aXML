@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.jar.JarFile;
 
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 22, 2023
@@ -32,7 +33,7 @@ public class aXMLDecoder {
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
-	public String decode() {
+	public String decode() throws XmlPullParserException, IOException {
 		try(FileInputStream inputStream = new FileInputStream(mBinaryXML)) {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			mPrintStream = new PrintStream(os);
@@ -40,9 +41,19 @@ public class aXMLDecoder {
 			byte[] bs = os.toByteArray();
 			mPrintStream.close();
 			return new String(bs, StandardCharsets.UTF_8);
-		} catch (XmlPullParserException | IOException e) {
-			e.printStackTrace();
-			return null;
+		}
+	}
+
+	@TargetApi(Build.VERSION_CODES.KITKAT)
+	public static String decodeManifest(File apkFile) throws XmlPullParserException, IOException {
+		try (JarFile jf = new JarFile(apkFile)) {
+			InputStream inputStream = jf.getInputStream(jf.getEntry("AndroidManifest.xml"));
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			mPrintStream = new PrintStream(os);
+			decode(inputStream);
+			byte[] bs = os.toByteArray();
+			mPrintStream.close();
+			return new String(bs, StandardCharsets.UTF_8);
 		}
 	}
 

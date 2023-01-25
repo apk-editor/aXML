@@ -20,6 +20,6 @@ public class TypedValue {
     	TYPE_LAST_INT = 31;
     
     public static final int
-	    COMPLEX_UNIT_MASK		=15;
+	    COMPLEX_UNIT_MASK = 15;
 	
 }
