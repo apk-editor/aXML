@@ -1,23 +1,21 @@
 package com.apk.axml.utils;
 
+import android.annotation.TargetApi;
+import android.os.Build;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
-import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
 
 public class StringBlock {
 
     int[] m_styleOffsets;
-    int[] m_styles;
 	private int[] m_stringOffsets;
 	private byte[] m_strings;
     private boolean m_isUTF8;
     private static final int CHUNK_TYPE = 0x001C0001;
     private static final int UTF8_FLAG = 0x00000100;
-
-    private final CharsetDecoder UTF8_DECODER = StandardCharsets.UTF_8.newDecoder();
-    private final CharsetDecoder UTF16LE_DECODER = StandardCharsets.UTF_16LE.newDecoder();
 
     public static StringBlock read(IntReader reader) throws IOException {
         ChunkUtil.readCheckType(reader, CHUNK_TYPE);
@@ -66,9 +64,10 @@ public class StringBlock {
 		return decodeString(offset, length);
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private String decodeString(int offset, int length) {
         try {
-            return (m_isUTF8 ? UTF8_DECODER : UTF16LE_DECODER).decode(
+            return (m_isUTF8 ? StandardCharsets.UTF_8.newDecoder() : StandardCharsets.UTF_16LE.newDecoder()).decode(
                     ByteBuffer.wrap(m_strings, offset, length)).toString();
         } catch (CharacterCodingException e) {
             return null;
@@ -108,10 +107,6 @@ public class StringBlock {
             return new int[]{4, (heigh + low) * 2};
         }
         return new int[]{2, val * 2};
-    }
-
-    public CharSequence get(int index) {
-        return getString(index);
     }
 
 	public int find(String string) {
