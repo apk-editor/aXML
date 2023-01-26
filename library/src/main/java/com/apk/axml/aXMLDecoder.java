@@ -58,28 +58,24 @@ public class aXMLDecoder {
 	}
 
 	private static void decode(InputStream inputStream) throws XmlPullParserException, IOException {
-		AXmlResourceParser parser=new AXmlResourceParser();
+		AXmlResourceParser parser = new AXmlResourceParser();
 		parser.open(inputStream);
 		StringBuilder indent = new StringBuilder(10);
-		final String indentStep="	";
-		while (true) {
-			int type=parser.next();
-			if (type== XmlPullParser.END_DOCUMENT) {
-				break;
-			}
-			switch (type) {
+		final String indentStep = "	";
+		while (parser.getEventType() != XmlPullParser.END_DOCUMENT) {
+			switch (parser.next()) {
 				case XmlPullParser.START_DOCUMENT: {
 					log("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
 					break;
 				}
 				case XmlPullParser.START_TAG: {
-					log("%s<%s%s",indent,
+					log("%s<%s%s", indent,
 							getNamespacePrefix(parser.getPrefix()),parser.getName());
 					indent.append(indentStep);
 
 					int namespaceCountBefore=parser.getNamespaceCount(parser.getDepth()-1);
 					int namespaceCount=parser.getNamespaceCount(parser.getDepth());
-					for (int i=namespaceCountBefore;i!=namespaceCount;++i) {
+					for (int i=namespaceCountBefore; i!=namespaceCount; ++i) {
 						log("%sxmlns:%s=\"%s\"",
 								indent,
 								parser.getNamespacePrefix(i),
@@ -87,23 +83,23 @@ public class aXMLDecoder {
 					}
 
 					for (int i=0;i!=parser.getAttributeCount();++i) {
-						log("%s%s%s=\"%s\"",indent,
+						log("%s%s%s=\"%s\"", indent,
 								getNamespacePrefix(parser.getAttributePrefix(i)),
 								parser.getAttributeName(i),
 								getAttributeValue(parser,i));
 					}
-					log("%s>",indent);
+					log("%s>", indent);
 					break;
 				}
 				case XmlPullParser.END_TAG: {
 					indent.setLength(indent.length()-indentStep.length());
-					log("%s</%s%s>",indent,
+					log("%s</%s%s>", indent,
 							getNamespacePrefix(parser.getPrefix()),
 							parser.getName());
 					break;
 				}
 				case XmlPullParser.TEXT: {
-					log("%s%s",indent,parser.getText());
+					log("%s%s", indent, parser.getText());
 					break;
 				}
 			}

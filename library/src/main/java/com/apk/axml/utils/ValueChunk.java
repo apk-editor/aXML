@@ -1,8 +1,11 @@
 package com.apk.axml.utils;
 
+import android.annotation.TargetApi;
 import android.graphics.Color;
+import android.os.Build;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,6 +15,7 @@ public class ValueChunk extends Chunk<Chunk.EmptyHeader> {
         int pos;
         String val;
 
+        @TargetApi(Build.VERSION_CODES.GINGERBREAD)
         public ValPair(Matcher m) {
             int c = m.groupCount();
             for (int i = 1; i <= c; ++i) {
@@ -33,7 +37,7 @@ public class ValueChunk extends Chunk<Chunk.EmptyHeader> {
     byte type = -1;
     int data = -1;
 
-    Pattern explicitType = Pattern.compile("!(?:(\\w+)!)?(.*)");
+    Pattern explicitType = Pattern.compile("^!(?:(string|str|null|)!)?(.*)");
     Pattern types = Pattern.compile(("^(?:" +
             "(@null)" +
             "|(@\\+?(?:\\w+:)?\\w+/\\w+|@(?:\\w+:)?[0-9a-zA-Z]+)" +
@@ -123,6 +127,7 @@ public class ValueChunk extends Chunk<Chunk.EmptyHeader> {
         return val.substring(0, val.length() - number);
     }
 
+    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
     public void evaluate() {
         Matcher m = explicitType.matcher(attrChunk.rawValue);
         if (m.find()) {
@@ -155,6 +160,16 @@ public class ValueChunk extends Chunk<Chunk.EmptyHeader> {
                     case 4:
                         type = 0x10;
                         data = Integer.parseInt(vp.val);
+                        BigInteger maxInt = BigInteger.valueOf(Integer.MAX_VALUE);
+                        BigInteger value = new BigInteger(vp.val);
+                        if (value.compareTo(maxInt) > 0) {
+                            type = 0x03;
+                            realString = vp.val;
+                            stringPool().addString(realString);
+                        } else {
+                            type = 0x10;
+                            data = Integer.parseInt(vp.val);
+                        }
                         break;
                     case 5:
                         type = 0x11;
