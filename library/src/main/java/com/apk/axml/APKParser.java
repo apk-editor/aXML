@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.zip.ZipFile;
 
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 25, 2023
@@ -175,11 +176,15 @@ public class APKParser {
         mVersionName = getPackageInfo(mAPKPath, mContext).versionName;
         mVersionCode = String.valueOf(getPackageInfo(mAPKPath, mContext).versionCode);
         mCertificate = getCertificateDetails(mContext);
-        try {
-            mManifest = aXMLDecoder.decodeManifest(new File(mAPKPath)).trim();
+
+        mAPKSize = new File(mAPKPath).length();
+
+        try (ZipFile zipFile = new ZipFile(mAPKPath)) {
+            InputStream inputStream = zipFile.getInputStream(zipFile.getEntry("AndroidManifest.xml"));
+            mManifest =  new aXMLDecoder().decode(inputStream).trim();
         } catch (Exception ignored) {
         }
-        mAPKSize = new File(mAPKPath).length();
+
         if (mManifest != null) {
             for (String line : Objects.requireNonNull(mManifest).trim().split("\\r?\\n")) {
                 if (line.trim().startsWith("android:name=\"") && line.contains(".permission.")) {
