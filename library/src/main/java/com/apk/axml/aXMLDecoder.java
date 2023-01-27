@@ -10,13 +10,10 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.jar.JarFile;
 
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 22, 2023
@@ -25,39 +22,15 @@ import java.util.jar.JarFile;
  */
 public class aXMLDecoder {
 
-	private static File mBinaryXML = null;
 	private static PrintStream mPrintStream = System.out;
 
-	public aXMLDecoder(File binaryXML) {
-		mBinaryXML = binaryXML;
+	public aXMLDecoder() {
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
-	public String decode() throws XmlPullParserException, IOException {
-		try(FileInputStream inputStream = new FileInputStream(mBinaryXML)) {
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			mPrintStream = new PrintStream(os);
-			decode(inputStream);
-			byte[] bs = os.toByteArray();
-			mPrintStream.close();
-			return new String(bs, StandardCharsets.UTF_8);
-		}
-	}
-
-	@TargetApi(Build.VERSION_CODES.KITKAT)
-	public static String decodeManifest(File apkFile) throws XmlPullParserException, IOException {
-		try (JarFile jf = new JarFile(apkFile)) {
-			InputStream inputStream = jf.getInputStream(jf.getEntry("AndroidManifest.xml"));
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			mPrintStream = new PrintStream(os);
-			decode(inputStream);
-			byte[] bs = os.toByteArray();
-			mPrintStream.close();
-			return new String(bs, StandardCharsets.UTF_8);
-		}
-	}
-
-	private static void decode(InputStream inputStream) throws XmlPullParserException, IOException {
+	public String decode(InputStream inputStream) throws XmlPullParserException, IOException {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		mPrintStream = new PrintStream(os);
 		AXmlResourceParser parser = new AXmlResourceParser();
 		parser.open(inputStream);
 		StringBuilder indent = new StringBuilder(10);
@@ -104,6 +77,9 @@ public class aXMLDecoder {
 				}
 			}
 		}
+		byte[] bs = os.toByteArray();
+		mPrintStream.close();
+		return new String(bs, StandardCharsets.UTF_8);
 	}
 
 	private static void log(String format,Object...arguments) {
