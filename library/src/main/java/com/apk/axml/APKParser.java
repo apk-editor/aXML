@@ -27,27 +27,24 @@ import java.util.zip.ZipFile;
  */
 public class APKParser {
 
-    private final Context mContext;
     private static Drawable mAppIcon = null;
     private static List<String> mPermissions = null;
     private static long mAPKSize = Integer.MIN_VALUE;
-    private static String mAppName = null, mAPKPath = null, mCertificate = null, mCompileSDK = null, mManifest = null, mMinSDK = null,
+    private static String mAppName = null, mCertificate = null, mCompileSDK = null, mManifest = null, mMinSDK = null,
             mPackageName = null, mVersionCode = null, mVersionName = null, mTarSDK = null;
 
-    public APKParser(String path, Context context) {
-        mAPKPath = path;
-        mContext = context;
+    public APKParser() {
     }
 
     public boolean isParsed() {
         return mPackageName != null;
     }
 
-    public static Drawable getAppIcon() {
+    public Drawable getAppIcon() {
         return mAppIcon;
     }
 
-    public static List<String> getPermissions() {
+    public List<String> getPermissions() {
         return mPermissions;
     }
 
@@ -59,19 +56,19 @@ public class APKParser {
         return context.getPackageManager();
     }
 
-    public static String getAppName() {
+    public String getAppName() {
         return mAppName;
     }
 
-    public static long getAPKSize() {
+    public long getAPKSize() {
         return mAPKSize;
     }
 
-    public static String getCompiledSDKVersion() {
+    public String getCompiledSDKVersion() {
         return mCompileSDK;
     }
 
-    public static String getCertificate() {
+    public String getCertificate() {
         return mCertificate;
     }
 
@@ -84,27 +81,27 @@ public class APKParser {
         return hash;
     }
 
-    public static String getManifest() {
+    public String getManifest() {
         return mManifest;
     }
 
-    public static String getMinSDKVersion() {
+    public String getMinSDKVersion() {
         return mMinSDK;
     }
 
-    public static String getPackageName() {
+    public String getPackageName() {
         return mPackageName;
     }
 
-    public static String getTargetSDKVersion() {
+    public String getTargetSDKVersion() {
         return mTarSDK;
     }
 
-    public static String getVersionCode() {
+    public String getVersionCode() {
         return mVersionCode;
     }
 
-    public static String getVersionName() {
+    public String getVersionName() {
         return mVersionName;
     }
 
@@ -134,10 +131,10 @@ public class APKParser {
         return null;
     }
 
-    public static String getCertificateDetails(Context context) {
+    public static String getCertificateDetails(String apkPath, Context context) {
         try {
             StringBuilder sb = new StringBuilder();
-            X509Certificate[] certs = getX509Certificates(new File(mAPKPath), context);
+            X509Certificate[] certs = getX509Certificates(new File(apkPath), context);
             if (certs == null || certs.length < 1) {
                 return null;
             }
@@ -160,7 +157,7 @@ public class APKParser {
         }
     }
 
-    public void parse() {
+    public void parse(String apkPath, Context context) {
         mManifest = null;
         mCompileSDK = null;
         mTarSDK = null;
@@ -170,16 +167,16 @@ public class APKParser {
         } else {
             mPermissions.clear();
         }
-        mAppName = getPackageManager(mContext).getApplicationLabel(getPackageInfo(mAPKPath, mContext).applicationInfo).toString();
-        mAppIcon = getPackageInfo(mAPKPath, mContext).applicationInfo.loadIcon(getPackageManager(mContext));
-        mPackageName = getPackageInfo(mAPKPath, mContext).packageName;
-        mVersionName = getPackageInfo(mAPKPath, mContext).versionName;
-        mVersionCode = String.valueOf(getPackageInfo(mAPKPath, mContext).versionCode);
-        mCertificate = getCertificateDetails(mContext);
+        mAppName = getPackageManager(context).getApplicationLabel(getPackageInfo(apkPath, context).applicationInfo).toString();
+        mAppIcon = getPackageInfo(apkPath, context).applicationInfo.loadIcon(getPackageManager(context));
+        mPackageName = getPackageInfo(apkPath, context).packageName;
+        mVersionName = getPackageInfo(apkPath, context).versionName;
+        mVersionCode = String.valueOf(getPackageInfo(apkPath, context).versionCode);
+        mCertificate = getCertificateDetails(apkPath, context);
 
-        mAPKSize = new File(mAPKPath).length();
+        mAPKSize = new File(apkPath).length();
 
-        try (ZipFile zipFile = new ZipFile(mAPKPath)) {
+        try (ZipFile zipFile = new ZipFile(apkPath)) {
             InputStream inputStream = zipFile.getInputStream(zipFile.getEntry("AndroidManifest.xml"));
             mManifest =  new aXMLDecoder().decode(inputStream).trim();
         } catch (Exception ignored) {
