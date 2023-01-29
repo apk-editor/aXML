@@ -131,7 +131,7 @@ public class APKParser {
         return null;
     }
 
-    public static String getCertificateDetails(String apkPath, Context context) {
+    private static String getCertificateDetails(String apkPath, Context context) {
         try {
             StringBuilder sb = new StringBuilder();
             X509Certificate[] certs = getX509Certificates(new File(apkPath), context);
@@ -157,16 +157,28 @@ public class APKParser {
         }
     }
 
-    public void parse(String apkPath, Context context) {
-        mManifest = null;
+    private static void clean() {
+        mAppIcon = null;
+        mAPKSize = Integer.MIN_VALUE;
+        mAppName = null;
+        mCertificate = null;
         mCompileSDK = null;
-        mTarSDK = null;
+        mManifest = null;
         mMinSDK = null;
+        mPackageName = null;
         if (mPermissions == null) {
             mPermissions = new ArrayList<>();
         } else {
             mPermissions.clear();
         }
+        mVersionCode = null;
+        mVersionName = null;
+        mTarSDK = null;
+    }
+
+    public void parse(String apkPath, Context context) {
+        clean();
+
         mAppName = getPackageManager(context).getApplicationLabel(getPackageInfo(apkPath, context).applicationInfo).toString();
         mAppIcon = getPackageInfo(apkPath, context).applicationInfo.loadIcon(getPackageManager(context));
         mPackageName = getPackageInfo(apkPath, context).packageName;
