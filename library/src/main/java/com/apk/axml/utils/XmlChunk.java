@@ -47,7 +47,7 @@ public class XmlChunk extends Chunk<XmlChunk.H> {
     private ReferenceResolver referenceResolver;
     @Override
     public ReferenceResolver getReferenceResolver() {
-        if (referenceResolver==null) referenceResolver= new DefaultReferenceResolver();
+        if (referenceResolver == null) referenceResolver= new DefaultReferenceResolver();
         return referenceResolver;
     }
 

@@ -1,6 +1,8 @@
 package com.apk.axml.utils;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.text.TextUtils;
 
 import com.apk.axml.aXMLEncoder;
@@ -72,7 +74,7 @@ public class StringPoolChunk extends Chunk<StringPoolChunk.H> {
             if (cdata != null) {
                 return cdata.length*2+4+padding();
             }else{
-               return bdata.length+3+padding();
+                return bdata.length+3+padding();
             }
         }
 
@@ -95,6 +97,7 @@ public class StringPoolChunk extends Chunk<StringPoolChunk.H> {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     public void preWrite() {
         rawStrings = new ArrayList<>();
@@ -110,7 +113,7 @@ public class StringPoolChunk extends Chunk<StringPoolChunk.H> {
                     rawStrings.add(r);
                 }
             }
-        }else{
+        } else {
             for (LinkedList<StringItem> ss: map.values()) {
                 for (StringItem s:ss) {
                     RawString r = new RawString();

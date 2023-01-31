@@ -22,15 +22,13 @@ import java.nio.charset.StandardCharsets;
  */
 public class aXMLDecoder {
 
-	private static PrintStream mPrintStream = System.out;
-
 	public aXMLDecoder() {
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	public String decode(InputStream inputStream) throws XmlPullParserException, IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		mPrintStream = new PrintStream(os);
+		PrintStream printStream = new PrintStream(os);
 		AXmlResourceParser parser = new AXmlResourceParser();
 		parser.open(inputStream);
 		StringBuilder indent = new StringBuilder(10);
@@ -38,53 +36,53 @@ public class aXMLDecoder {
 		while (parser.getEventType() != XmlPullParser.END_DOCUMENT) {
 			switch (parser.next()) {
 				case XmlPullParser.START_DOCUMENT: {
-					log("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+					log(printStream, "<?xml version=\"1.0\" encoding=\"utf-8\"?>");
 					break;
 				}
 				case XmlPullParser.START_TAG: {
-					log("%s<%s%s", indent,
+					log(printStream, "%s<%s%s", indent,
 							getNamespacePrefix(parser.getPrefix()),parser.getName());
 					indent.append(indentStep);
 
 					int namespaceCountBefore=parser.getNamespaceCount(parser.getDepth()-1);
 					int namespaceCount=parser.getNamespaceCount(parser.getDepth());
 					for (int i=namespaceCountBefore; i!=namespaceCount; ++i) {
-						log("%sxmlns:%s=\"%s\"",
+						log(printStream, "%sxmlns:%s=\"%s\"",
 								indent,
 								parser.getNamespacePrefix(i),
 								parser.getNamespaceUri(i));
 					}
 
 					for (int i=0;i!=parser.getAttributeCount();++i) {
-						log("%s%s%s=\"%s\"", indent,
+						log(printStream, "%s%s%s=\"%s\"", indent,
 								getNamespacePrefix(parser.getAttributePrefix(i)),
 								parser.getAttributeName(i),
 								getAttributeValue(parser,i));
 					}
-					log("%s>", indent);
+					log(printStream, "%s>", indent);
 					break;
 				}
 				case XmlPullParser.END_TAG: {
 					indent.setLength(indent.length()-indentStep.length());
-					log("%s</%s%s>", indent,
+					log(printStream, "%s</%s%s>", indent,
 							getNamespacePrefix(parser.getPrefix()),
 							parser.getName());
 					break;
 				}
 				case XmlPullParser.TEXT: {
-					log("%s%s", indent, parser.getText());
+					log(printStream, "%s%s", indent, parser.getText());
 					break;
 				}
 			}
 		}
 		byte[] bs = os.toByteArray();
-		mPrintStream.close();
+		printStream.close();
 		return new String(bs, StandardCharsets.UTF_8);
 	}
 
-	private static void log(String format,Object...arguments) {
-		mPrintStream.printf(format,arguments);
-		mPrintStream.println();
+	private static void log(PrintStream printStream, String format,Object...arguments) {
+		printStream.printf(format,arguments);
+		printStream.println();
 	}
 	
 	private static String getNamespacePrefix(String prefix) {
@@ -101,10 +99,10 @@ public class aXMLDecoder {
 			return parser.getAttributeValue(index);
 		}
 		if (type == TypedValue.TYPE_ATTRIBUTE) {
-			return String.format("?%s%08X",getPackage(data), data);
+			return String.format("?%s%08X", getPackage(data), data);
 		}
 		if (type == TypedValue.TYPE_REFERENCE) {
-			return String.format("@%s%08X",getPackage(data), data);
+			return String.format("@%s%08X", getPackage(data), data);
 		}
 		if (type == TypedValue.TYPE_FLOAT) {
 			return String.valueOf(Float.intBitsToFloat(data));
@@ -146,9 +144,11 @@ public class aXMLDecoder {
 	private static final float[] RADIX_MULTS = {
 		0.00390625F, 3.051758E-005F, 1.192093E-007F, 4.656613E-010F
 	};
+
 	private static final String[] DIMENSION_UNITS = {
 		"px", "dip", "sp", "pt", "in", "mm", "", ""
 	};
+
 	private static final String[] FRACTION_UNITS = {
 		"%", "%p", "", "", "", "", "", ""
 	};

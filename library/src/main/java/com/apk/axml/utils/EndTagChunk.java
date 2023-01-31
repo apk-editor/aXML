@@ -3,6 +3,7 @@ package com.apk.axml.utils;
 import java.io.IOException;
 
 public class EndTagChunk extends Chunk<EndTagChunk.H> {
+
     public class H extends Chunk.NodeHeader {
 
         public H() {
@@ -12,15 +13,16 @@ public class EndTagChunk extends Chunk<EndTagChunk.H> {
     }
 
     public StartTagChunk start;
-    public EndTagChunk(Chunk parent,StartTagChunk start) {
+
+    public EndTagChunk(Chunk parent, StartTagChunk start) {
         super(parent);
         this.start=start;
     }
 
     @Override
     public void writeEx(IntWriter w) throws IOException {
-        w.write(stringIndex(null,start.namespace));
-        w.write(stringIndex(null,start.name));
+        w.write(stringIndex(null, start.namespace));
+        w.write(stringIndex(null, start.name));
     }
 
 }

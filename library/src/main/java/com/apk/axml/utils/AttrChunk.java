@@ -3,6 +3,7 @@ package com.apk.axml.utils;
 import java.io.IOException;
 
 public class AttrChunk extends Chunk<Chunk.EmptyHeader> {
+
     private final StartTagChunk startTagChunk;
     public String prefix;
     public String name;

@@ -1,6 +1,7 @@
 package com.apk.axml.utils;
 
 enum ChunkType {
+
     Null(0x0000, -1),
     StringPool(0x0001, 28),
     Xml(0x0003, 8),
@@ -14,8 +15,8 @@ enum ChunkType {
     public final short headerSize;
 
     ChunkType(int type, int headerSize) {
-        this.type = (short)type;
-        this.headerSize = (short)headerSize;
+        this.type = (short) type;
+        this.headerSize = (short) headerSize;
     }
 
 }

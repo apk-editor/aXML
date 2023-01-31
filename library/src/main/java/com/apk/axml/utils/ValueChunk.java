@@ -11,6 +11,13 @@ import java.util.regex.Pattern;
 
 public class ValueChunk extends Chunk<Chunk.EmptyHeader> {
 
+    private final AttrChunk attrChunk;
+    private String realString;
+    short size = 8;
+    byte res0 = 0;
+    byte type = -1;
+    int data = -1;
+
     static class ValPair {
         int pos;
         String val;
@@ -29,13 +36,6 @@ public class ValueChunk extends Chunk<Chunk.EmptyHeader> {
             val = m.group();
         }
     }
-
-    private final AttrChunk attrChunk;
-    private String realString;
-    short size = 8;
-    byte res0 = 0;
-    byte type = -1;
-    int data = -1;
 
     Pattern explicitType = Pattern.compile("^!(?:(string|str|null|)!)?(.*)");
     Pattern types = Pattern.compile(("^(?:" +

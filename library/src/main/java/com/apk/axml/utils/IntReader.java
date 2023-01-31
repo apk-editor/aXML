@@ -14,7 +14,7 @@ public final class IntReader {
 	public IntReader(InputStream stream,boolean bigEndian) {
 		reset(stream,bigEndian);
 	}
-	
+
 	public void reset(InputStream stream, boolean bigEndian) {
 		m_stream = stream;
 		m_bigEndian = bigEndian;
@@ -35,9 +35,11 @@ public final class IntReader {
 	public int readInt() throws IOException {
 		return readInt(4);
 	}
-    public void readFully(byte[] b) throws IOException {
-        new DataInputStream(m_stream).readFully(b);
-    }
+
+	public void readFully(byte[] b) throws IOException {
+		new DataInputStream(m_stream).readFully(b);
+	}
+
 	public int readInt(int length) throws IOException {
 		if (length < 0 || length > 4) {
 			throw new IllegalArgumentException();
@@ -63,21 +65,21 @@ public final class IntReader {
 				result|=(b<<i);
 			}
 		}
-		return result;		  
+		return result;
 	}
-	
+
 	public int[] readIntArray(int length) throws IOException {
 		int[] array=new int[length];
 		readIntArray(array,0,length);
 		return array;
 	}
-	
+
 	public void readIntArray(int[] array,int offset,int length) throws IOException {
 		for (;length>0;length-=1) {
 			array[offset++]=readInt();
 		}
 	}
-	
+
 	public void skip(int bytes) throws IOException {
 		if (bytes<=0) {
 			return;
@@ -88,7 +90,7 @@ public final class IntReader {
 			throw new EOFException();
 		}
 	}
-	
+
 	public void skipInt() throws IOException {
 		skip(4);
 	}

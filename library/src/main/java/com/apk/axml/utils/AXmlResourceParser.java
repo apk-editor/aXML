@@ -15,7 +15,7 @@ public class AXmlResourceParser implements XmlPullParser {
 	private IntReader m_reader;
 	private boolean m_operational = false;
 	private boolean m_decreaseDepth;
-	private final NamespaceStack m_namespaces=new NamespaceStack();
+	private final NamespaceStack m_namespaces = new NamespaceStack();
 	private int m_event;
 	private int m_lineNumber;
 	private int m_name;
@@ -24,8 +24,7 @@ public class AXmlResourceParser implements XmlPullParser {
 	private int m_classAttribute;
 	private StringBlock m_strings;
 
-	private static final String
-			E_NOT_SUPPORTED = "Method is not supported.";
+	private static final String E_NOT_SUPPORTED = "Method is not supported.";
 
 	private static final int
 			ATTRIBUTE_IX_NAMESPACE_URI = 0,
@@ -44,11 +43,11 @@ public class AXmlResourceParser implements XmlPullParser {
 			CHUNK_XML_START_TAG = 0x00100102,
 			CHUNK_XML_END_TAG = 0x00100103,
 			CHUNK_XML_LAST = 0x00100104;
-	
+
 	public AXmlResourceParser() {
 		resetEventInfo();
 	}
-	
+
 	public void open(InputStream stream) {
 		close();
 		if (stream != null) {
@@ -119,8 +118,8 @@ public class AXmlResourceParser implements XmlPullParser {
 
 	public void require(int type,String namespace,String name) throws XmlPullParserException {
 		if (type != getEventType() ||
-			(namespace != null && !namespace.equals(getNamespace())) ||
-			(name != null && !name.equals(getName())))
+				(namespace != null && !namespace.equals(getNamespace())) ||
+				(name != null && !name.equals(getName())))
 		{
 			throw new XmlPullParserException(TYPES[type]+" is expected.",this,null);
 		}
@@ -265,6 +264,7 @@ public class AXmlResourceParser implements XmlPullParser {
 	public void setInput(InputStream stream,String inputEncoding) throws XmlPullParserException {
 		throw new XmlPullParserException(E_NOT_SUPPORTED);
 	}
+
 	public void setInput(Reader reader) throws XmlPullParserException {
 		throw new XmlPullParserException(E_NOT_SUPPORTED);
 	}
@@ -296,6 +296,7 @@ public class AXmlResourceParser implements XmlPullParser {
 	public Object getProperty(String name) {
 		return null;
 	}
+
 	public void setProperty(String name,Object value) throws XmlPullParserException {
 		throw new XmlPullParserException(E_NOT_SUPPORTED);
 	}
@@ -303,6 +304,7 @@ public class AXmlResourceParser implements XmlPullParser {
 	public boolean getFeature(String feature) {
 		return false;
 	}
+
 	public void setFeature(String name,boolean value) throws XmlPullParserException {
 		throw new XmlPullParserException(E_NOT_SUPPORTED);
 	}
@@ -318,7 +320,7 @@ public class AXmlResourceParser implements XmlPullParser {
 		}
 
 		public void reset() {
-			m_dataLength=0;
+			m_dataLength = 0;
 			m_count = 0;
 			m_depth = 0;
 		}
@@ -405,6 +407,7 @@ public class AXmlResourceParser implements XmlPullParser {
 			m_dataLength+=2;
 			m_depth+=1;
 		}
+
 		public void decreaseDepth() {
 			if (m_dataLength == 0) {
 				return;
@@ -496,11 +499,11 @@ public class AXmlResourceParser implements XmlPullParser {
 			return -1;
 		}
 		int uri = (namespace != null)?
-			m_strings.find(namespace):
-			-1;
+				m_strings.find(namespace):
+				-1;
 		for (int o=0; o!=m_attributes.length; ++o) {
 			if (name == m_attributes[o+ATTRIBUTE_IX_NAME] &&
-				(uri == -1 || uri == m_attributes[o+ATTRIBUTE_IX_NAMESPACE_URI]))
+					(uri == -1 || uri == m_attributes[o+ATTRIBUTE_IX_NAMESPACE_URI]))
 			{
 				return o/ATTRIBUTE_LENGHT;
 			}
@@ -527,14 +530,14 @@ public class AXmlResourceParser implements XmlPullParser {
 			m_namespaces.increaseDepth();
 			m_operational = true;
 		}
-		
+
 		if (m_event == END_DOCUMENT) {
 			return;
 		}
 
 		int event = m_event;
 		resetEventInfo();
-		
+
 		while (true) {
 			if (m_decreaseDepth) {
 				m_decreaseDepth = false;
@@ -542,20 +545,20 @@ public class AXmlResourceParser implements XmlPullParser {
 			}
 
 			if (event == END_TAG &&
-				m_namespaces.getDepth() == 1 &&
-				m_namespaces.getCurrentCount() == 0)
+					m_namespaces.getDepth() == 1 &&
+					m_namespaces.getCurrentCount() == 0)
 			{
 				m_event = END_DOCUMENT;
 				break;
 			}
-			
+
 			int chunkType;
 			if (event == START_DOCUMENT) {
 				chunkType = CHUNK_XML_START_TAG;
 			} else {
 				chunkType = m_reader.readInt();
 			}
-			
+
 			if (chunkType == CHUNK_RESOURCEIDS) {
 				int chunkSize = m_reader.readInt();
 				if (chunkSize < 8 || (chunkSize%4) != 0) {
@@ -564,7 +567,7 @@ public class AXmlResourceParser implements XmlPullParser {
 				m_resourceIDs = m_reader.readIntArray(chunkSize/4-2);
 				continue;
 			}
-			
+
 			if (chunkType<CHUNK_XML_FIRST || chunkType>CHUNK_XML_LAST) {
 				throw new IOException("Invalid chunk type ("+chunkType+").");
 			}
@@ -590,9 +593,9 @@ public class AXmlResourceParser implements XmlPullParser {
 				}
 				continue;
 			}
-			
+
 			m_lineNumber = lineNumber;
-			
+
 			if (chunkType == CHUNK_XML_START_TAG) {
 				m_namespaceUri = m_reader.readInt();
 				m_name = m_reader.readInt();
@@ -610,9 +613,9 @@ public class AXmlResourceParser implements XmlPullParser {
 				}
 				m_namespaces.increaseDepth();
 				m_event = START_TAG;
-				break;				
+				break;
 			}
-			
+
 			if (chunkType == CHUNK_XML_END_TAG) {
 				m_namespaceUri = m_reader.readInt();
 				m_name = m_reader.readInt();
@@ -628,4 +631,5 @@ public class AXmlResourceParser implements XmlPullParser {
 			break;
 		}
 	}
+
 }

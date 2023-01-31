@@ -11,8 +11,8 @@ import java.nio.charset.StandardCharsets;
 public class StringBlock {
 
     int[] m_styleOffsets;
-	private int[] m_stringOffsets;
-	private byte[] m_strings;
+    private int[] m_stringOffsets;
+    private byte[] m_strings;
     private boolean m_isUTF8;
     private static final int CHUNK_TYPE = 0x001C0001;
     private static final int UTF8_FLAG = 0x00000100;
@@ -52,16 +52,16 @@ public class StringBlock {
         }
         int offset = m_stringOffsets[index];
         int length;
-		int[] val;
-		if (m_isUTF8) {
-			val = getUtf8(m_strings, offset);
+        int[] val;
+        if (m_isUTF8) {
+            val = getUtf8(m_strings, offset);
             offset = val[0];
-		} else {
-			val = getUtf16(m_strings, offset);
+        } else {
+            val = getUtf16(m_strings, offset);
             offset += val[0];
-		}
-		length = val[1];
-		return decodeString(offset, length);
+        }
+        length = val[1];
+        return decodeString(offset, length);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -96,7 +96,10 @@ public class StringBlock {
         while (array[offset + length] != 0) {
             length++;
         }
-        return new int[]{offset, length};
+        return new int[] {
+                offset,
+                length
+        };
     }
 
     private static int[] getUtf16(byte[] array, int offset) {
@@ -106,34 +109,36 @@ public class StringBlock {
             int low = (array[offset + 2] & 0xFF);
             return new int[]{4, (heigh + low) * 2};
         }
-        return new int[]{2, val * 2};
+        return new int[] {
+                2, val * 2
+        };
     }
 
-	public int find(String string) {
-		if (string==null) {
-			return -1;
-		}
-		for (int i=0; i!=m_stringOffsets.length; ++i) {
-			int offset = m_stringOffsets[i];
-			int length = getShort(m_strings,offset);
-			if (length != string.length()) {
-				continue;
-			}
-			int j = 0;
-			for (;j !=length; ++j) {
-				offset+=2;
-				if (string.charAt(j) != getShort(m_strings,offset)) {
-					break;
-				}
-			}
-			if (j == length) {
-				return i;
-			}
-		}
-		return -1;
-	}
+    public int find(String string) {
+        if (string == null) {
+            return -1;
+        }
+        for (int i=0; i!=m_stringOffsets.length; ++i) {
+            int offset = m_stringOffsets[i];
+            int length = getShort(m_strings, offset);
+            if (length != string.length()) {
+                continue;
+            }
+            int j = 0;
+            for (;j !=length; ++j) {
+                offset+=2;
+                if (string.charAt(j) != getShort(m_strings, offset)) {
+                    break;
+                }
+            }
+            if (j == length) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
-	private StringBlock() {
-	}
+    private StringBlock() {
+    }
 
 }

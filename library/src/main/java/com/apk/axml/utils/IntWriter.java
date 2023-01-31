@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public class IntWriter {
+
     private final OutputStream os;
     private final boolean bigEndian = false;
     private int pos=0;

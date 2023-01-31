@@ -9,6 +9,11 @@ import java.lang.reflect.Type;
 
 public abstract class Chunk<H extends Chunk.Header> {
 
+    private boolean isCalculated = false;
+    protected Context context;
+    private final Chunk parent;
+    public H header;
+
     public abstract static class Header {
         short type;
         short headerSize;
@@ -51,23 +56,23 @@ public abstract class Chunk<H extends Chunk.Header> {
 
         @Override
         public void writeEx(IntWriter w) throws IOException {
-
         }
     }
 
-    public class EmptyHeader extends Header{
+    public class EmptyHeader extends Header {
         public EmptyHeader() {
             super(ChunkType.Null);
         }
         @Override
-        public void writeEx(IntWriter w) throws IOException {}
+        public void writeEx(IntWriter w) throws IOException {
+        }
         @Override
-        public void write(IntWriter w) throws IOException {}
+        public void write(IntWriter w) throws IOException {
+        }
     }
 
-
-    public Chunk(Chunk parent){
-        this.parent=parent;
+    public Chunk(Chunk parent) {
+        this.parent = parent;
         try {
             Class<H> t = (Class<H>)((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
             Constructor[] cs=t.getConstructors();
@@ -76,15 +81,10 @@ public abstract class Chunk<H extends Chunk.Header> {
                 if (ts.length==1&&Chunk.class.isAssignableFrom((Class<?>)ts[0]))
                     header = (H) c.newInstance(this);
             }
-        }catch (Exception e){
-
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
-    protected Context context;
-    private final Chunk parent;
-    public H header;
 
     public void write(IntWriter w) throws IOException {
         int pos=w.getPos();
@@ -103,7 +103,6 @@ public abstract class Chunk<H extends Chunk.Header> {
         return getParent().getContext();
     }
 
-    private boolean isCalculated=false;
     public int calc() {
         if (!isCalculated){
             preWrite();
@@ -116,7 +115,7 @@ public abstract class Chunk<H extends Chunk.Header> {
         return getParent().root();
     }
 
-    public int stringIndex(String namespace,String s) {
+    public int stringIndex(String namespace, String s) {
         return stringPool().stringIndex(namespace, s);
     }
 
