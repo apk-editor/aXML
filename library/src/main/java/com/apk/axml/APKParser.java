@@ -131,7 +131,7 @@ public class APKParser {
         return null;
     }
 
-    private static String getCertificateDetails(String apkPath, Context context) {
+    public static String getCertificateDetails(String apkPath, Context context) {
         try {
             StringBuilder sb = new StringBuilder();
             X509Certificate[] certs = getX509Certificates(new File(apkPath), context);
