@@ -159,16 +159,12 @@ public class ValueChunk extends Chunk<Chunk.EmptyHeader> {
                         break;
                     case 4:
                         type = 0x10;
-                        data = Integer.parseInt(vp.val);
-                        BigInteger maxInt = BigInteger.valueOf(Integer.MAX_VALUE);
-                        BigInteger value = new BigInteger(vp.val);
-                        if (value.compareTo(maxInt) > 0) {
+                        try {
+                            data = Integer.parseInt(vp.val);
+                        } catch (NumberFormatException e) {
                             type = 0x03;
                             realString = vp.val;
                             stringPool().addString(realString);
-                        } else {
-                            type = 0x10;
-                            data = Integer.parseInt(vp.val);
                         }
                         break;
                     case 5:
