@@ -9,16 +9,13 @@ import com.apk.axml.utils.TypedValue;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 22, 2023
- * Based on the original work of @hzw1199 (https://github.com/hzw1199/xml2axml/)
- * & @WindySha (https://github.com/WindySha/Xpatch)
+ * Based on the original work of @hzw1199 (https://github.com/hzw1199/xml2axml/), @developer-krushna
+ * (https://github.com/developer-krushna/AXMLPrinter), & @WindySha (https://github.com/WindySha/Xpatch)
  */
 public class aXMLDecoder {
 
@@ -27,114 +24,133 @@ public class aXMLDecoder {
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	public String decode(InputStream inputStream) throws XmlPullParserException, IOException {
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		PrintStream printStream = new PrintStream(os);
 		AXmlResourceParser parser = new AXmlResourceParser();
 		parser.open(inputStream);
-		StringBuilder indent = new StringBuilder(10);
-		final String indentStep = "	";
-		while (parser.getEventType() != XmlPullParser.END_DOCUMENT) {
-			switch (parser.next()) {
-				case XmlPullParser.START_DOCUMENT: {
-					log(printStream, "<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-					break;
-				}
-				case XmlPullParser.START_TAG: {
-					log(printStream, "%s<%s%s", indent,
-							getNamespacePrefix(parser.getPrefix()),parser.getName());
-					indent.append(indentStep);
+		StringBuilder indentation = new StringBuilder();
+		StringBuilder xmlContent = new StringBuilder();
+		while (true) {
+			int eventType = parser.next();
+			if (eventType == XmlPullParser.END_DOCUMENT) {
+				// End of document
+				String result = xmlContent.toString();
+				parser.close();
+				return result;
+			}
 
-					int namespaceCountBefore=parser.getNamespaceCount(parser.getDepth()-1);
-					int namespaceCount=parser.getNamespaceCount(parser.getDepth());
-					for (int i=namespaceCountBefore; i!=namespaceCount; ++i) {
-						log(printStream, "%sxmlns:%s=\"%s\"",
-								indent,
-								parser.getNamespacePrefix(i),
-								parser.getNamespaceUri(i));
+			switch (eventType) {
+				case XmlPullParser.START_DOCUMENT:
+					// Append XML declaration at the start of the document
+					xmlContent.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+					break;
+
+				case XmlPullParser.START_TAG:
+					// Handle the start of a new XML tag
+					if (parser.getPrevious().type == XmlPullParser.START_TAG) {
+						xmlContent.append(">\n");
+					}
+					xmlContent.append(String.format("%s<%s%s", indentation, getNamespacePrefix(parser.getPrefix()), parser.getName()));
+					indentation.append("    ");
+
+					// Handle namespaces
+					int depth = parser.getDepth();
+					int namespaceStart = parser.getNamespaceCount(depth - 1);
+					int namespaceEnd = parser.getNamespaceCount(depth);
+
+					for (int i = namespaceStart; i < namespaceEnd; i++) {
+						String namespaceFormat = (i == namespaceStart) ? "%sxmlns:%s=\"%s\"" : "\n%sxmlns:%s=\"%s\"";
+						xmlContent.append(String.format(namespaceFormat, (i == namespaceStart) ? " " : indentation, parser.getNamespacePrefix(i), parser.getNamespaceUri(i)));
 					}
 
-					for (int i=0;i!=parser.getAttributeCount();++i) {
-						log(printStream, "%s%s%s=\"%s\"", indent,
-								getNamespacePrefix(parser.getAttributePrefix(i)),
-								parser.getAttributeName(i),
-								getAttributeValue(parser,i));
+					// Handle attributes
+					int attributeCount = parser.getAttributeCount();
+					if (attributeCount > 0) {
+						xmlContent.append('\n');
 					}
-					log(printStream, "%s>", indent);
+					for (int i = 0; i < attributeCount; i++) {
+						String attributeFormat = (i == attributeCount - 1) ? "%s%s%s=\"%s\"" : "%s%s%s=\"%s\"\n";
+						xmlContent.append(String.format(attributeFormat, indentation, getNamespacePrefix(parser.getAttributePrefix(i)), parser.getAttributeName(i), getAttributeValue(parser, i)));
+					}
 					break;
-				}
-				case XmlPullParser.END_TAG: {
-					indent.setLength(indent.length()-indentStep.length());
-					log(printStream, "%s</%s%s>", indent,
-							getNamespacePrefix(parser.getPrefix()),
-							parser.getName());
+
+				case XmlPullParser.END_TAG:
+					// Handle the end of an XML tag
+					indentation.setLength(indentation.length() - "    ".length());
+					if (!isEndOf(parser, parser.getPrevious())) {
+						xmlContent.append(String.format("%s</%s%s>\n", indentation, getNamespacePrefix(parser.getPrefix()), parser.getName()));
+					} else {
+						xmlContent.append("/>\n");
+					}
 					break;
-				}
-				case XmlPullParser.TEXT: {
-					log(printStream, "%s%s", indent, parser.getText());
+
+				case XmlPullParser.TEXT:
+					// Handle text within an XML tag
+					if (parser.getPrevious().type == XmlPullParser.START_TAG) {
+						xmlContent.append(">\n");
+					}
+					xmlContent.append(String.format("%s%s\n", indentation, parser.getText()));
 					break;
-				}
 			}
 		}
-		byte[] bs = os.toByteArray();
-		printStream.close();
-		return new String(bs, StandardCharsets.UTF_8);
 	}
 
-	private static void log(PrintStream printStream, String format,Object...arguments) {
-		printStream.printf(format,arguments);
-		printStream.println();
-	}
-	
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 	private static String getNamespacePrefix(String prefix) {
-		if (prefix == null || prefix.length() == 0) {
+		if (prefix == null || prefix.isEmpty()) {
 			return "";
 		}
 		return prefix+":";
 	}
 
-	private static String getAttributeValue(AXmlResourceParser parser, int index) {
-		int type = parser.getAttributeValueType(index);
-		int data = parser.getAttributeValueData(index);
-		if (type == TypedValue.TYPE_STRING) {
-			return parser.getAttributeValue(index);
-		}
-		if (type == TypedValue.TYPE_ATTRIBUTE) {
-			return String.format("?%s%08X", getPackage(data), data);
-		}
-		if (type == TypedValue.TYPE_REFERENCE) {
-			return String.format("@%s%08X", getPackage(data), data);
-		}
-		if (type == TypedValue.TYPE_FLOAT) {
-			return String.valueOf(Float.intBitsToFloat(data));
-		}
-		if (type == TypedValue.TYPE_INT_HEX) {
-			return String.format("0x%08X", data);
-		}
-		if (type == TypedValue.TYPE_INT_BOOLEAN) {
-			return data !=0 ?"true" : "false";
-		}
-		if (type == TypedValue.TYPE_DIMENSION) {
-			return complexToFloat(data) +
-					DIMENSION_UNITS[data & TypedValue.COMPLEX_UNIT_MASK];
-		}
-		if (type == TypedValue.TYPE_FRACTION) {
-			return complexToFloat(data) +
-					FRACTION_UNITS[data & TypedValue.COMPLEX_UNIT_MASK];
-		}
-		if (type >= TypedValue.TYPE_FIRST_COLOR_INT && type <= TypedValue.TYPE_LAST_COLOR_INT) {
-			return String.format("#%08X", data);
-		}
-		if (type >= TypedValue.TYPE_FIRST_INT && type <= TypedValue.TYPE_LAST_INT) {
-			return String.valueOf(data);
-		}
-		return String.format("<0x%X, type 0x%02X>", data, type);
+	// Checks if the current XML tag is the end of the previous tag
+	private  boolean isEndOf(AXmlResourceParser xmlParser, AXmlResourceParser.OldXMLToken oldXmlToken) {
+		return oldXmlToken.type == XmlPullParser.START_TAG &&
+				xmlParser.getEventType() == XmlPullParser.END_TAG &&
+				xmlParser.getName().equals(oldXmlToken.name) &&
+				((oldXmlToken.namespace == null && xmlParser.getPrefix() == null) ||
+						(oldXmlToken.namespace != null && xmlParser.getPrefix() != null &&
+								xmlParser.getPrefix().equals(oldXmlToken.namespace)));
 	}
-	
-	private static String getPackage(int id) {
-		if (id >>> 24 == 1) {
-			return "android:";
+
+	private String getAttributeValue(AXmlResourceParser xmlParser, int index) {
+
+		int attributeValueType = xmlParser.getAttributeValueType(index);
+
+		int attributeValueData = xmlParser.getAttributeValueData(index);
+
+		switch (attributeValueType) {
+			case TypedValue.TYPE_STRING:
+				return xmlParser.getAttributeValue(index);
+
+			case TypedValue.TYPE_ATTRIBUTE:
+				return "?" + String.format("%08x", attributeValueData);
+
+			case TypedValue.TYPE_REFERENCE:
+				return "@"+ String.format("%08x", attributeValueData);
+
+			case TypedValue.TYPE_FLOAT:
+				return String.valueOf(Float.intBitsToFloat(attributeValueData));
+
+			case TypedValue.TYPE_INT_HEX:
+				return String.format("0x%08x", attributeValueData);
+
+			case TypedValue.TYPE_INT_BOOLEAN:
+				return attributeValueData != 0 ? "true" : "false";
+
+			case TypedValue.TYPE_DIMENSION:
+				return complexToFloat(attributeValueData) + DIMENSION_UNITS[attributeValueData & 15];
+
+			case TypedValue.TYPE_FRACTION:
+				return complexToFloat(attributeValueData) + FRACTION_UNITS[attributeValueData & 15];
+
+			default:
+				// Handle enum or flag values and other cases
+				// For unhandled types or cases
+				return (attributeValueType >= 28 && attributeValueType <= 31) ?
+						String.format("#%08x", attributeValueData) :
+						(attributeValueType >= 16 && attributeValueType <= 31) ?
+								String.valueOf(attributeValueData) :
+								String.format("<0x%X, type 0x%02X>", attributeValueData, attributeValueType);
 		}
-		return "";
 	}
 
 	public static float complexToFloat(int complex) {
@@ -146,11 +162,11 @@ public class aXMLDecoder {
 	};
 
 	private static final String[] DIMENSION_UNITS = {
-		"px", "dip", "sp", "pt", "in", "mm", "", ""
+		"px", "dip", "sp", "pt", "in", "mm"
 	};
 
 	private static final String[] FRACTION_UNITS = {
-		"%", "%p", "", "", "", "", "", ""
+		"%", "%p"
 	};
 
 }

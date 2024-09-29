@@ -1,5 +1,9 @@
 package com.apk.axml.utils;
 
+import android.annotation.TargetApi;
+import android.content.res.XmlResourceParser;
+import android.os.Build;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -7,629 +11,757 @@ import java.io.Reader;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-public class AXmlResourceParser implements XmlPullParser {
+@TargetApi(Build.VERSION_CODES.KITKAT)
+public class AXmlResourceParser implements XmlResourceParser, AutoCloseable {
 
-	int m_idAttribute;
-	int[] m_resourceIDs;
-	int m_styleAttribute;
-	private IntReader m_reader;
-	private boolean m_operational = false;
-	private boolean m_decreaseDepth;
-	private final NamespaceStack m_namespaces = new NamespaceStack();
-	private int m_event;
-	private int m_lineNumber;
-	private int m_name;
-	private int m_namespaceUri;
-	private int[] m_attributes;
-	private int m_classAttribute;
-	private StringBlock m_strings;
-
+	private static final int CHUNK_AXML_FILE = 524291,
+			CHUNK_RESOURCEIDS = 524672,
+			CHUNK_XML_END_NAMESPACE = 1048833,
+			CHUNK_XML_END_TAG = 0x00100103,
+			CHUNK_XML_START_TAG = 0x00100102;
 	private static final String E_NOT_SUPPORTED = "Method is not supported.";
 
-	private static final int
-			ATTRIBUTE_IX_NAMESPACE_URI = 0,
-			ATTRIBUTE_IX_NAME = 1,
-			ATTRIBUTE_IX_VALUE_STRING = 2,
-			ATTRIBUTE_IX_VALUE_TYPE = 3,
-			ATTRIBUTE_IX_VALUE_DATA = 4,
-			ATTRIBUTE_LENGHT = 5;
+	private int[] mAttributes, mResourceIDs;
+	private boolean mOperational = false, mDecreaseDepth;
+	private int mClassAttribute, eventType, mIdAttribute, mLineNumber,
+			mName, mNamespaceUri, mStyleAttribute;
+	private IntReader mReader;
+	private StringBlock stringBlock;
+	private OldXMLToken oldXmlToken = null;
+	private final NamespaceStack mNamespaces = new NamespaceStack();
 
-	private static final int
-			CHUNK_AXML_FILE = 0x00080003,
-			CHUNK_RESOURCEIDS = 0x00080180,
-			CHUNK_XML_FIRST = 0x00100100,
-			CHUNK_XML_START_NAMESPACE = 0x00100100,
-			CHUNK_XML_END_NAMESPACE = 0x00100101,
-			CHUNK_XML_START_TAG = 0x00100102,
-			CHUNK_XML_END_TAG = 0x00100103,
-			CHUNK_XML_LAST = 0x00100104;
+	public static final class NamespaceStack {
+		private int mCount, mDataLength, mDepth;
+		private int[] mData = new int[32];
+
+		private void ensureDataCapacity(int capacity) {
+			int available = (mData.length - mDataLength);
+			if (available > capacity) {
+				return;
+			}
+			int newLength = (mData.length + available) * 2;
+			int[] newData = new int[newLength];
+			System.arraycopy(mData, 0, newData, 0, mDataLength);
+			mData = newData;
+		}
+
+		private int find(int prefixOrUri, boolean prefix) {
+			if (mDataLength == 0) {
+				return -1;
+			}
+			int offset = mDataLength - 1;
+			for (int i = mDepth; i != 0; --i) {
+				int count = mData[offset];
+				offset -= 2;
+				for (; count != 0; --count) {
+					if (prefix) {
+						if (mData[offset] == prefixOrUri) {
+							return mData[offset + 1];
+						}
+					} else {
+						if (mData[offset + 1] == prefixOrUri) {
+							return mData[offset];
+						}
+					}
+					offset -= 2;
+				}
+			}
+			return -1;
+		}
+
+		private int get(int index, boolean prefix) {
+			if (mDataLength == 0 || index < 0) {
+				return -1;
+			}
+			int offset = 0;
+			for (int i = mDepth; i != 0; --i) {
+				int count = mData[offset];
+				if (index >= count) {
+					index -= count;
+					offset += (2 + count * 2);
+					continue;
+				}
+				offset += (1 + index * 2);
+				if (!prefix) {
+					offset += 1;
+				}
+				return mData[offset];
+			}
+			return -1;
+		}
+
+		public void decreaseDepth() {
+			if (mDataLength == 0) {
+				return;
+			}
+			int offset = mDataLength - 1;
+			int count = mData[offset];
+			if ((offset - 1 - count * 2) == 0) {
+				return;
+			}
+			mDataLength -= 2 + count * 2;
+			mCount -= count;
+			mDepth -= 1;
+		}
+
+		public int findPrefix(int prefix) {
+			return find(prefix, false);
+		}
+
+		public int getAccumulatedCount(int depth) {
+			if (mDataLength == 0 || depth < 0) {
+				return 0;
+			}
+			if (depth > mDepth) {
+				depth = mDepth;
+			}
+			int accumulatedCount = 0;
+			int offset = 0;
+			for (; depth != 0; --depth) {
+				int count = mData[offset];
+				accumulatedCount += count;
+				offset += (2 + count * 2);
+			}
+			return accumulatedCount;
+		}
+
+		public int getCurrentCount() {
+			if (mDataLength == 0) {
+				return 0;
+			}
+			int offset = mDataLength - 1;
+			return mData[offset];
+		}
+
+		public int getDepth() {
+			return this.mDepth;
+		}
+
+		public int getPrefix(int index) {
+			return get(index, true);
+		}
+
+		public int getUri(int index) {
+			return get(index, false);
+		}
+
+		public void increaseDepth() {
+			ensureDataCapacity(2);
+			int offset = mDataLength;
+			mData[offset] = 0;
+			mData[offset + 1] = 0;
+			mDataLength += 2;
+			mDepth += 1;
+		}
+
+		public boolean pop() {
+			if (mDataLength == 0) {
+				return false;
+			}
+			int offset = mDataLength - 1;
+			int count = mData[offset];
+			if (count == 0) {
+				return false;
+			}
+			count -= 1;
+			offset -= 2;
+			mData[offset] = count;
+			offset -= (1 + count * 2);
+			mData[offset] = count;
+			mDataLength -= 2;
+			mCount -= 1;
+			return true;
+		}
+
+		public void push(int prefix, int uri) {
+			if (mDepth == 0) {
+				increaseDepth();
+			}
+			ensureDataCapacity(2);
+			int offset = mDataLength - 1;
+			int count = mData[offset];
+			mData[offset - 1 - count * 2] = count + 1;
+			mData[offset] = prefix;
+			mData[offset + 1] = uri;
+			mData[offset + 2] = count + 1;
+			mDataLength += 2;
+			mCount += 1;
+		}
+
+		public void reset() {
+			this.mDataLength = 0;
+			this.mCount = 0;
+			this.mDepth = 0;
+		}
+	}
+
+	public static final class OldXMLToken {
+		public String name;
+		public String namespace;
+		public int type;
+
+		public OldXMLToken(String name, String namespace, int type) {
+			this.name = name;
+			this.namespace = namespace;
+			this.type = type;
+		}
+	}
 
 	public AXmlResourceParser() {
 		resetEventInfo();
 	}
 
-	public void open(InputStream stream) {
-		close();
-		if (stream != null) {
-			m_reader = new IntReader(stream,false);
+	private void doNext() throws IOException {
+		int readInt = 0;
+		if (this.stringBlock == null) {
+			ChunkUtil.readCheckType(this.mReader, CHUNK_AXML_FILE);
+			this.mReader.skipInt();
+			this.stringBlock = StringBlock.read(this.mReader);
+			this.mNamespaces.increaseDepth();
+			this.mOperational = true;
 		}
-	}
-
-	public void close() {
-		if (!m_operational) {
+		if (this.eventType == XmlPullParser.END_DOCUMENT) {
 			return;
 		}
-		m_operational = false;
-		m_reader.close();
-		m_reader = null;
-		m_strings = null;
-		m_resourceIDs = null;
-		m_namespaces.reset();
+		int previousEvent = this.eventType;
 		resetEventInfo();
-	}
-
-	public int next() throws XmlPullParserException,IOException {
-		if (m_reader == null) {
-			throw new XmlPullParserException("Parser is not opened.",this,null);
-		}
-		try {
-			doNext();
-			return m_event;
-		}
-		catch (IOException e) {
-			close();
-			throw e;
-		}
-	}
-
-	public int nextToken() throws XmlPullParserException, IOException {
-		return next();
-	}
-
-	public int nextTag() throws XmlPullParserException,IOException {
-		int eventType = next();
-		if (eventType == TEXT && isWhitespace()) {
-			eventType = next();
-		}
-		if (eventType != START_TAG && eventType != END_TAG) {
-			throw new XmlPullParserException("Expected start or end tag.",this,null);
-		}
-		return eventType;
-	}
-
-	public String nextText() throws XmlPullParserException,IOException {
-		if(getEventType() != START_TAG) {
-			throw new XmlPullParserException("Parser must be on START_TAG to read next text.",this,null);
-		}
-		int eventType = next();
-		if (eventType == TEXT) {
-			String result = getText();
-			eventType=next();
-			if (eventType != END_TAG) {
-				throw new XmlPullParserException("Event TEXT must be immediately followed by END_TAG.",this,null);
+		while (true) {
+			if (this.mDecreaseDepth) {
+				this.mDecreaseDepth = false;
+				this.mNamespaces.decreaseDepth();
 			}
-			return result;
-		} else if (eventType == END_TAG) {
-			return "";
-		} else {
-			throw new XmlPullParserException("Parser must be on START_TAG or TEXT to read text.",this,null);
+			if (previousEvent == XmlPullParser.END_TAG && this.mNamespaces.getDepth() == 1 && this.mNamespaces.getCurrentCount() == 0) {
+				this.eventType = XmlPullParser.END_DOCUMENT;
+				return;
+			}
+			int chunkType = previousEvent == XmlPullParser.START_DOCUMENT ? CHUNK_XML_START_TAG : this.mReader.readInt();
+			if (chunkType == CHUNK_RESOURCEIDS) {
+				readInt = this.mReader.readInt();
+				if (readInt < 8 || readInt % 4 != 0) {
+					break;
+				}
+				this.mResourceIDs = this.mReader.readIntArray((readInt / 4) - 2);
+			} else if (chunkType < 1048832 || chunkType > 1048836) {
+				break;
+			} else if (chunkType == CHUNK_XML_START_TAG && previousEvent == -1) {
+				this.eventType = XmlPullParser.START_DOCUMENT;
+				return;
+			} else {
+				this.mReader.skipInt();
+				int lineNumber = this.mReader.readInt();
+				this.mReader.skipInt();
+				if (chunkType != 1048832 && chunkType != CHUNK_XML_END_NAMESPACE) {
+					this.mLineNumber = lineNumber;
+					if (chunkType == CHUNK_XML_START_TAG) {
+						this.mNamespaceUri = this.mReader.readInt();
+						this.mName = this.mReader.readInt();
+						this.mReader.skipInt();
+						int attributeCount = this.mReader.readInt();
+						this.mIdAttribute = (attributeCount >>> 16) - 1;
+						int classAttr = this.mReader.readInt();
+						this.mStyleAttribute = (classAttr >>> 16) - 1;
+						this.mClassAttribute = (65535 & classAttr) - 1;
+						this.mAttributes = this.mReader.readIntArray((attributeCount & 65535) * 5);
+						int i = 3;
+						while (true) {
+							int[] attributes = this.mAttributes;
+							if (i >= attributes.length) {
+								this.mNamespaces.increaseDepth();
+								this.eventType = 2;
+								return;
+							}
+							attributes[i] = attributes[i] >>> 24;
+							i += 5;
+						}
+					} else if (chunkType == CHUNK_XML_END_TAG) {
+						this.mNamespaceUri = this.mReader.readInt();
+						this.mName = this.mReader.readInt();
+						this.eventType = 3;
+						this.mDecreaseDepth = true;
+						return;
+					} else if (chunkType == 1048836) {
+						this.mName = this.mReader.readInt();
+						this.mReader.skipInt();
+						this.mReader.skipInt();
+						this.eventType = 4;
+						return;
+					}
+				} else if (chunkType == 1048832) {
+					this.mNamespaces.push(this.mReader.readInt(), this.mReader.readInt());
+				} else {
+					this.mReader.skipInt();
+					this.mReader.skipInt();
+					this.mNamespaces.pop();
+				}
+			}
 		}
+		throw new IOException("Invalid resource ids size (" + readInt + ").");
 	}
 
-	public void require(int type,String namespace,String name) throws XmlPullParserException {
-		if (type != getEventType() ||
-				(namespace != null && !namespace.equals(getNamespace())) ||
-				(name != null && !name.equals(getName())))
-		{
-			throw new XmlPullParserException(TYPES[type]+" is expected.",this,null);
-		}
-	}
-
-	public int getDepth() {
-		return m_namespaces.getDepth()-1;
-	}
-
-	public int getEventType() {
-		return m_event;
-	}
-
-	public int getLineNumber() {
-		return m_lineNumber;
-	}
-
-	public String getName() {
-		if (m_name == -1 || (m_event != START_TAG && m_event != END_TAG)) {
-			return null;
-		}
-		return m_strings.getString(m_name);
-	}
-
-	public String getText() {
-		if (m_name == -1 || m_event!=TEXT) {
-			return null;
-		}
-		return m_strings.getString(m_name);
-	}
-
-	public char[] getTextCharacters(int[] holderForStartAndLength) {
-		String text = getText();
-		if (text == null) {
-			return null;
-		}
-		holderForStartAndLength[0] = 0;
-		holderForStartAndLength[1] = text.length();
-		char[] chars = new char[text.length()];
-		text.getChars(0,text.length(),chars,0);
-		return chars;
-	}
-
-	public String getNamespace() {
-		return m_strings.getString(m_namespaceUri);
-	}
-
-	public String getPrefix() {
-		int prefix = m_namespaces.findPrefix(m_namespaceUri);
-		return m_strings.getString(prefix);
-	}
-
-	public String getPositionDescription() {
-		return "XML line #"+getLineNumber();
-	}
-
-	public int getNamespaceCount(int depth) {
-		return m_namespaces.getAccumulatedCount(depth);
-	}
-
-	public String getNamespacePrefix(int pos) {
-		int prefix = m_namespaces.getPrefix(pos);
-		return m_strings.getString(prefix);
-	}
-
-	public String getNamespaceUri(int pos) {
-		int uri = m_namespaces.getUri(pos);
-		return m_strings.getString(uri);
-	}
-
-	public int getAttributeCount() {
-		if (m_event != START_TAG) {
+	private int findAttribute(String namespace, String attributeName) {
+		if (stringBlock == null || attributeName == null) {
 			return -1;
 		}
-		return m_attributes.length/ATTRIBUTE_LENGHT;
-	}
 
-	public String getAttributeNamespace(int index) {
-		int offset = getAttributeOffset(index);
-		int namespace = m_attributes[offset+ATTRIBUTE_IX_NAMESPACE_URI];
-		if (namespace == -1) {
-			return "";
+		int attributeIndex = stringBlock.find(attributeName);
+		if (attributeIndex == -1) {
+			return -1;
 		}
-		return m_strings.getString(namespace);
-	}
 
-	public String getAttributePrefix(int index) {
-		int offset = getAttributeOffset(index);
-		int uri = m_attributes[offset+ATTRIBUTE_IX_NAMESPACE_URI];
-		int prefix=m_namespaces.findPrefix(uri);
-		if (prefix == -1) {
-			return "";
+		int namespaceIndex = namespace != null ? stringBlock.find(namespace) : -1;
+
+		for (int i = 0; i < mAttributes.length; i += 5) {
+			if (attributeIndex == mAttributes[i + 1] &&
+					(namespaceIndex == -1 || namespaceIndex == mAttributes[i])) {
+				return i / 5;
+			}
 		}
-		return m_strings.getString(prefix);
+
+		return -1;
 	}
 
+	private int getAttributeOffset(int index) {
+		if (this.eventType == XmlPullParser.START_TAG) {
+			int offset = index * 5;
+			if (offset < this.mAttributes.length) {
+				return offset;
+			}
+			throw new IndexOutOfBoundsException("Invalid attribute index (" + index + ").");
+		}
+		throw new IndexOutOfBoundsException("Current event is not START_TAG.");
+	}
+
+	private void resetEventInfo() {
+		this.eventType = -1;
+		this.mLineNumber = -1;
+		this.mName = -1;
+		this.mNamespaceUri = -1;
+		this.mAttributes = null;
+		this.mIdAttribute = -1;
+		this.mClassAttribute = -1;
+		this.mStyleAttribute = -1;
+	}
+
+	@Override
+	public void close() {
+		if (this.mOperational) {
+			this.mOperational = false;
+			this.mReader.close();
+			this.mReader = null;
+			this.stringBlock = null;
+			this.mResourceIDs = null;
+			this.mNamespaces.reset();
+			resetEventInfo();
+		}
+	}
+
+	@Override
+	public void defineEntityReplacementText(String entityName, String replacementText) throws XmlPullParserException {
+		throw new XmlPullParserException("Entity replacement text not supported.");
+	}
+
+	@Override
+	public boolean getAttributeBooleanValue(int index, boolean defaultValue) {
+		return getAttributeIntValue(index, defaultValue ? 1 : 0) != 0;
+	}
+
+	@Override
+	public boolean getAttributeBooleanValue(String namespace, String attributeName, boolean defaultValue) {
+		int attributeIndex = findAttribute(namespace, attributeName);
+		return attributeIndex == -1 ? defaultValue : getAttributeBooleanValue(attributeIndex, defaultValue);
+	}
+
+	@Override
+	public int getAttributeCount() {
+		if (this.eventType != XmlPullParser.START_TAG) {
+			return -1;
+		}
+		return this.mAttributes.length / 5;
+	}
+
+	@Override
+	public float getAttributeFloatValue(int index, float defaultValue) {
+		int attributeOffset = getAttributeOffset(index);
+		int[] attributeArray = this.mAttributes;
+		return attributeArray[attributeOffset + 3] == TypedValue.TYPE_FLOAT ? Float.intBitsToFloat(attributeArray[attributeOffset + 4]) : defaultValue;
+	}
+
+	@Override
+	public float getAttributeFloatValue(String namespace, String attributeName, float defaultValue) {
+		int attributeIndex = findAttribute(namespace, attributeName);
+		return attributeIndex == -1 ? defaultValue : getAttributeFloatValue(attributeIndex, defaultValue);
+	}
+
+	@Override
+	public int getAttributeIntValue(int index, int defaultValue) {
+		int attributeOffset = getAttributeOffset(index);
+		int[] attributeArray = this.mAttributes;
+		int attributeType = attributeArray[attributeOffset + 3];
+		return (attributeType < TypedValue.TYPE_FIRST_INT || attributeType > TypedValue.TYPE_LAST_INT) ? defaultValue : attributeArray[attributeOffset + 4];
+	}
+
+	@Override
+	public int getAttributeIntValue(String namespace, String attributeName, int defaultValue) {
+		int attributeIndex = findAttribute(namespace, attributeName);
+		return attributeIndex == -1 ? defaultValue : getAttributeIntValue(attributeIndex, defaultValue);
+	}
+
+	public int getAttributeListValue(int index, String[] options, int defaultValue) {
+		// TODO implement
+		return 0;
+	}
+
+	public int getAttributeListValue(String namespace, String attribute, String[] options, int defaultValue) {
+		// TODO implement
+		return 0;
+	}
+
+	@Override
 	public String getAttributeName(int index) {
-		int offset = getAttributeOffset(index);
-		int name=m_attributes[offset+ATTRIBUTE_IX_NAME];
-		if (name == -1) {
-			return "";
+		int nameIndex = this.mAttributes[getAttributeOffset(index) + 1];
+		return this.stringBlock.getString(nameIndex);
+	}
+
+	@Override
+	public String getAttributeNamespace(int index) {
+		int namespaceIndex = this.mAttributes[getAttributeOffset(index)];
+		return namespaceIndex == -1 ? "" : this.stringBlock.getString(namespaceIndex);
+	}
+
+	@Override
+	public int getAttributeNameResource(int index) {
+		int resourceNameIndex = this.mAttributes[getAttributeOffset(index) + 1];
+		int[] resourceArray = this.mResourceIDs;
+		if (resourceArray == null || resourceNameIndex < 0 || resourceNameIndex >= resourceArray.length) {
+			return 0;
 		}
-		return m_strings.getString(name);
+		return resourceArray[resourceNameIndex];
 	}
 
-	public int getAttributeValueType(int index) {
-		int offset = getAttributeOffset(index);
-		return m_attributes[offset+ATTRIBUTE_IX_VALUE_TYPE];
+	@Override
+	public String getAttributePrefix(int index) {
+		int findPrefix = this.mNamespaces.findPrefix(this.mAttributes[getAttributeOffset(index)]);
+		return findPrefix == -1 ? "" : this.stringBlock.getString(findPrefix);
 	}
 
-	public int getAttributeValueData(int index) {
-		int offset = getAttributeOffset(index);
-		return m_attributes[offset+ATTRIBUTE_IX_VALUE_DATA];
+	@Override
+	public int getAttributeResourceValue(int index, int defaultValue) {
+		int attributeOffset = getAttributeOffset(index);
+		int[] resourceArray = this.mAttributes;
+		return resourceArray[attributeOffset + 3] == 1 ? resourceArray[attributeOffset + 4] : defaultValue;
 	}
 
-	public String getAttributeValue(int index) {
-		int offset = getAttributeOffset(index);
-		int valueType = m_attributes[offset+ATTRIBUTE_IX_VALUE_TYPE];
-		if (valueType == TypedValue.TYPE_STRING) {
-			int valueString = m_attributes[offset+ATTRIBUTE_IX_VALUE_STRING];
-			return m_strings.getString(valueString);
-		}
-		return "";
+	@Override
+	public int getAttributeResourceValue(String namespace, String attributeName, int defaultValue) {
+		int findAttribute = findAttribute(namespace, attributeName);
+		return findAttribute == -1 ? defaultValue : getAttributeResourceValue(findAttribute, defaultValue);
 	}
 
-	public String getAttributeValue(String namespace,String attribute) {
-		int index = findAttribute(namespace,attribute);
-		if (index == -1) {
-			return null;
-		}
-		return getAttributeValue(index);
-	}
-
+	@Override
 	public String getAttributeType(int index) {
 		return "CDATA";
 	}
 
-	public boolean isAttributeDefault(int index) {
-		return false;
+	@Override
+	public int getAttributeUnsignedIntValue(int index, int defaultValue) {
+		return getAttributeIntValue(index, defaultValue);
 	}
 
-	public void setInput(InputStream stream,String inputEncoding) throws XmlPullParserException {
-		throw new XmlPullParserException(E_NOT_SUPPORTED);
+	@Override
+	public int getAttributeUnsignedIntValue(String namespace, String attribute, int defaultValue) {
+		int findAttribute = findAttribute(namespace, attribute);
+		return findAttribute == -1 ? defaultValue : getAttributeUnsignedIntValue(findAttribute, defaultValue);
 	}
 
-	public void setInput(Reader reader) throws XmlPullParserException {
-		throw new XmlPullParserException(E_NOT_SUPPORTED);
+	@Override
+	public String getAttributeValue(int index) {
+		int attributeOffset = getAttributeOffset(index);
+		int[] attributeArray = this.mAttributes;
+		if (attributeArray[attributeOffset + 3] == 3) {
+			return this.stringBlock.getString(attributeArray[attributeOffset + 2]);
+		}
+		return "";
 	}
 
-	public String getInputEncoding() {
-		return null;
+	@Override
+	public String getAttributeValue(String namespace, String attribute) {
+		int findAttribute = findAttribute(namespace, attribute);
+		if (findAttribute == -1) {
+			return null;
+		}
+		return getAttributeValue(findAttribute);
 	}
 
+	public int getAttributeValueData(int index) {
+		return this.mAttributes[getAttributeOffset(index) + 4];
+	}
+
+	public int getAttributeValueType(int index) {
+		return this.mAttributes[getAttributeOffset(index) + 3];
+	}
+
+	@Override
+	public String getClassAttribute() {
+		int i = this.mClassAttribute;
+		if (i == -1) {
+			return null;
+		}
+		return this.stringBlock.getString(this.mAttributes[getAttributeOffset(i) + 2]);
+	}
+
+	@Override
 	public int getColumnNumber() {
 		return -1;
 	}
 
-	public boolean isEmptyElementTag() {
+	@Override
+	public int getDepth() {
+		return this.mNamespaces.getDepth() - 1;
+	}
+
+	@Override
+	public int getEventType() {
+		return this.eventType;
+	}
+
+	@Override
+	public boolean getFeature(String value) {
 		return false;
 	}
 
-	public boolean isWhitespace() {
-		return false;
+	@Override
+	public String getIdAttribute() {
+		int i = this.mIdAttribute;
+		if (i == -1) {
+			return null;
+		}
+		return this.stringBlock.getString(this.mAttributes[getAttributeOffset(i) + 2]);
 	}
 
-	public void defineEntityReplacementText(String entityName,String replacementText) throws XmlPullParserException {
-		throw new XmlPullParserException(E_NOT_SUPPORTED);
+	@Override
+	public int getIdAttributeResourceValue(int index) {
+		int resourceValueIndex = this.mIdAttribute;
+		if (resourceValueIndex == -1) {
+			return index;
+		}
+		int attributeOffset = getAttributeOffset(resourceValueIndex);
+		int[] attributeArray = this.mAttributes;
+		return attributeArray[attributeOffset + 3] != 1 ? index : attributeArray[attributeOffset + 4];
 	}
 
-	public String getNamespace(String prefix) {
+	@Override
+	public String getInputEncoding() {
+		return null;
+	}
+
+	@Override
+	public int getLineNumber() {
+		return this.mLineNumber;
+	}
+
+	@Override
+	public String getName() {
+		int nameIndex = this.mName;
+		if (nameIndex != -1) {
+			int mEvent = this.eventType;
+			if (mEvent == 2 || mEvent == 3) {
+				return this.stringBlock.getString(nameIndex);
+			}
+			return null;
+		}
+		return null;
+	}
+
+	@Override
+	public String getNamespace() {
+		return this.stringBlock.getString(this.mNamespaceUri);
+	}
+
+	@Override
+	public String getNamespace(String value) {
 		throw new RuntimeException(E_NOT_SUPPORTED);
 	}
 
+	@Override
+	public int getNamespaceCount(int index) {
+		return this.mNamespaces.getAccumulatedCount(index);
+	}
+
+	@Override
+	public String getNamespacePrefix(int i) {
+		return this.stringBlock.getString(this.mNamespaces.getPrefix(i));
+	}
+
+	@Override
+	public String getNamespaceUri(int pos) {
+		return this.stringBlock.getString(this.mNamespaces.getUri(pos));
+	}
+
+	@Override
+	public String getPositionDescription() {
+		return "XML line #" + getLineNumber();
+	}
+
+	@Override
+	public String getPrefix() {
+		return this.stringBlock.getString(this.mNamespaces.findPrefix(this.mNamespaceUri));
+	}
+
+	public OldXMLToken getPrevious() {
+		return this.oldXmlToken;
+	}
+
+	@Override
 	public Object getProperty(String name) {
 		return null;
 	}
 
-	public void setProperty(String name,Object value) throws XmlPullParserException {
-		throw new XmlPullParserException(E_NOT_SUPPORTED);
+	@Override
+	public int getStyleAttribute() {
+		int i = this.mStyleAttribute;
+		if (i == -1) {
+			return 0;
+		}
+		return this.mAttributes[getAttributeOffset(i) + 4];
 	}
 
-	public boolean getFeature(String feature) {
+	@Override
+	public String getText() {
+		if (this.eventType == XmlPullParser.TEXT) {
+			return this.stringBlock.getString(this.mName);
+		}
+		return null;
+	}
+
+	@Override
+	public char[] getTextCharacters(int[] holderForStartAndLength) {
+		String text = getText();
+		if (text == null) {
+			holderForStartAndLength[0] = -1;
+			holderForStartAndLength[1] = -1;
+			return null;
+		}
+		holderForStartAndLength[0] = 0;
+		holderForStartAndLength[1] = text.length();
+		char[] characters = new char[text.length()];
+		text.getChars(0, text.length(), characters, 0);
+		return characters;
+	}
+
+	@Override
+	public boolean isAttributeDefault(int index) {
+		// No default attributes, returning false
 		return false;
 	}
 
-	public void setFeature(String name,boolean value) throws XmlPullParserException {
+	@Override
+	public boolean isEmptyElementTag() {
+		return false;
+	}
+
+	@Override
+	public boolean isWhitespace() throws XmlPullParserException {
+		if (this.eventType != XmlPullParser.TEXT) {
+			throw new XmlPullParserException("Current event is not TEXT");
+		}
+		String text = getText();
+		if (text == null) {
+			return false;
+		}
+		for (int i = 0; i < text.length(); i++) {
+			if (!Character.isWhitespace(text.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public int next() throws XmlPullParserException, IOException {
+		if (this.mReader != null) {
+			try {
+				if (this.stringBlock != null) {
+					this.oldXmlToken = new OldXMLToken(getName(), getPrefix(), getEventType());
+				}
+				doNext();
+				return this.eventType;
+			} catch (IOException e) {
+				close();
+				throw e;
+			}
+		}
+		throw new XmlPullParserException("Parser is not opened.", this, null);
+	}
+
+	@Override
+	public int nextTag() throws XmlPullParserException, IOException {
+		int eventType = next();
+		if (eventType == XmlPullParser.TEXT && isWhitespace()) {
+			eventType = next();
+		}
+		if (eventType != XmlPullParser.START_TAG && eventType != XmlPullParser.END_TAG) {
+			throw new XmlPullParserException("Expected start or end tag.", this, null);
+		}
+		return eventType;
+	}
+
+	@Override
+	public String nextText() throws XmlPullParserException, IOException {
+		if (getEventType() != XmlPullParser.START_TAG) {
+			throw new XmlPullParserException("Parser must be on START_TAG to read next text.", this, null);
+		}
+		int eventType = next();
+		if (eventType == XmlPullParser.TEXT) {
+			String result = getText();
+			eventType = next();
+			if (eventType != XmlPullParser.END_TAG) {
+				throw new XmlPullParserException("Event TEXT must be immediately followed by END_TAG.", this, null);
+			}
+			return result;
+		} else if (eventType == XmlPullParser.END_TAG) {
+			return "";
+		} else {
+			throw new XmlPullParserException("Parser must be on START_TAG or TEXT to read text.", this, null);
+		}
+	}
+
+	@Override
+	public int nextToken() throws XmlPullParserException, IOException {
+		return next();
+	}
+
+	public void open(InputStream inputStream) {
+		close();
+		if (inputStream != null) {
+			this.mReader = new IntReader(inputStream, false);
+		}
+	}
+
+	@Override
+	public void require(int type, String namespace, String name) throws XmlPullParserException {
+		if (type != getEventType() || ((namespace != null && !namespace.equals(getNamespace())) || (name != null && !name.equals(getName())))) {
+			throw new XmlPullParserException(TYPES[type] + " is expected.", this, null);
+		}
+	}
+
+	@Override
+	public void setFeature(String name, boolean value) throws XmlPullParserException {
 		throw new XmlPullParserException(E_NOT_SUPPORTED);
 	}
 
-	private static final class NamespaceStack {
-
-		int m_count;
-		private int m_dataLength;
-		private int[] m_data;
-		private int m_depth;
-		public NamespaceStack() {
-			m_data=new int[32];
-		}
-
-		public void reset() {
-			m_dataLength = 0;
-			m_count = 0;
-			m_depth = 0;
-		}
-
-		public int getCurrentCount() {
-			if (m_dataLength == 0) {
-				return 0;
-			}
-			int offset = m_dataLength-1;
-			return m_data[offset];
-		}
-
-		public int getAccumulatedCount(int depth) {
-			if (m_dataLength == 0 || depth<0) {
-				return 0;
-			}
-			if (depth > m_depth) {
-				depth = m_depth;
-			}
-			int accumulatedCount=0;
-			int offset = 0;
-			for (;depth != 0;--depth) {
-				int count = m_data[offset];
-				accumulatedCount+=count;
-				offset += (2+count*2);
-			}
-			return accumulatedCount;
-		}
-
-		public void push(int prefix,int uri) {
-			if (m_depth == 0) {
-				increaseDepth();
-			}
-			ensureDataCapacity(2);
-			int offset = m_dataLength-1;
-			int count = m_data[offset];
-			m_data[offset-1-count*2] = count+1;
-			m_data[offset] = prefix;
-			m_data[offset+1] = uri;
-			m_data[offset+2] = count+1;
-			m_dataLength+=2;
-			m_count+=1;
-		}
-
-		public void pop() {
-			if (m_dataLength == 0) {
-				return;
-			}
-			int offset = m_dataLength-1;
-			int count = m_data[offset];
-			if (count == 0) {
-				return;
-			}
-			count-=1;
-			offset-=2;
-			m_data[offset]=count;
-			offset-=(1+count*2);
-			m_data[offset]=count;
-			m_dataLength-=2;
-			m_count-=1;
-		}
-
-		public int getPrefix(int index) {
-			return get(index,true);
-		}
-
-		public int getUri(int index) {
-			return get(index,false);
-		}
-
-		public int findPrefix(int uri) {
-			return find(uri,false);
-		}
-
-		public int getDepth() {
-			return m_depth;
-		}
-
-		public void increaseDepth() {
-			ensureDataCapacity(2);
-			int offset = m_dataLength;
-			m_data[offset] = 0;
-			m_data[offset+1] = 0;
-			m_dataLength+=2;
-			m_depth+=1;
-		}
-
-		public void decreaseDepth() {
-			if (m_dataLength == 0) {
-				return;
-			}
-			int offset = m_dataLength-1;
-			int count = m_data[offset];
-			if ((offset-1-count*2) == 0) {
-				return;
-			}
-			m_dataLength-=2+count*2;
-			m_count-=count;
-			m_depth-=1;
-		}
-
-		private void ensureDataCapacity(int capacity) {
-			int available = (m_data.length-m_dataLength);
-			if (available > capacity) {
-				return;
-			}
-			int newLength = (m_data.length+available)*2;
-			int[] newData = new int[newLength];
-			System.arraycopy(m_data,0,newData,0,m_dataLength);
-			m_data = newData;
-		}
-
-		private int find(int prefixOrUri,boolean prefix) {
-			if (m_dataLength == 0) {
-				return -1;
-			}
-			int offset = m_dataLength-1;
-			for (int i = m_depth; i!=0; --i) {
-				int count=m_data[offset];
-				offset-=2;
-				for (;count!=0; --count) {
-					if (prefix) {
-						if (m_data[offset] == prefixOrUri) {
-							return m_data[offset+1];
-						}
-					} else {
-						if (m_data[offset+1] == prefixOrUri) {
-							return m_data[offset];
-						}
-					}
-					offset-=2;
-				}
-			}
-			return -1;
-		}
-
-		private int get(int index,boolean prefix) {
-			if (m_dataLength == 0 || index < 0) {
-				return -1;
-			}
-			int offset = 0;
-			for (int i=m_depth; i!=0; --i) {
-				int count = m_data[offset];
-				if (index >= count) {
-					index-=count;
-					offset+=(2+count*2);
-					continue;
-				}
-				offset+=(1+index*2);
-				if (!prefix) {
-					offset+=1;
-				}
-				return m_data[offset];
-			}
-			return -1;
-		}
+	@Override
+	public void setInput(InputStream inputStream, String inputEncoding) throws XmlPullParserException {
+		throw new XmlPullParserException(E_NOT_SUPPORTED);
 	}
 
-	private int getAttributeOffset(int index) {
-		if (m_event != START_TAG) {
-			throw new IndexOutOfBoundsException("Current event is not START_TAG.");
-		}
-		int offset = index*5;
-		if (offset >= m_attributes.length) {
-			throw new IndexOutOfBoundsException("Invalid attribute index ("+index+").");
-		}
-		return offset;
+	@Override
+	public void setInput(Reader reader) throws XmlPullParserException {
+		throw new XmlPullParserException(E_NOT_SUPPORTED);
 	}
 
-	private int findAttribute(String namespace,String attribute) {
-		if (m_strings == null || attribute==null) {
-			return -1;
-		}
-		int name = m_strings.find(attribute);
-		if (name == -1) {
-			return -1;
-		}
-		int uri = (namespace != null)?
-				m_strings.find(namespace):
-				-1;
-		for (int o=0; o!=m_attributes.length; ++o) {
-			if (name == m_attributes[o+ATTRIBUTE_IX_NAME] &&
-					(uri == -1 || uri == m_attributes[o+ATTRIBUTE_IX_NAMESPACE_URI]))
-			{
-				return o/ATTRIBUTE_LENGHT;
-			}
-		}
-		return -1;
-	}
-
-	private void resetEventInfo() {
-		m_event = -1;
-		m_lineNumber = -1;
-		m_name =- 1;
-		m_namespaceUri = -1;
-		m_attributes = null;
-		m_idAttribute =- 1;
-		m_classAttribute =- 1;
-		m_styleAttribute = -1;
-	}
-
-	private void doNext() throws IOException {
-		if (m_strings == null) {
-			ChunkUtil.readCheckType(m_reader,CHUNK_AXML_FILE);
-			m_reader.skipInt();
-			m_strings = StringBlock.read(m_reader);
-			m_namespaces.increaseDepth();
-			m_operational = true;
-		}
-
-		if (m_event == END_DOCUMENT) {
-			return;
-		}
-
-		int event = m_event;
-		resetEventInfo();
-
-		while (true) {
-			if (m_decreaseDepth) {
-				m_decreaseDepth = false;
-				m_namespaces.decreaseDepth();
-			}
-
-			if (event == END_TAG &&
-					m_namespaces.getDepth() == 1 &&
-					m_namespaces.getCurrentCount() == 0)
-			{
-				m_event = END_DOCUMENT;
-				break;
-			}
-
-			int chunkType;
-			if (event == START_DOCUMENT) {
-				chunkType = CHUNK_XML_START_TAG;
-			} else {
-				chunkType = m_reader.readInt();
-			}
-
-			if (chunkType == CHUNK_RESOURCEIDS) {
-				int chunkSize = m_reader.readInt();
-				if (chunkSize < 8 || (chunkSize%4) != 0) {
-					throw new IOException("Invalid resource ids size ("+chunkSize+").");
-				}
-				m_resourceIDs = m_reader.readIntArray(chunkSize/4-2);
-				continue;
-			}
-
-			if (chunkType<CHUNK_XML_FIRST || chunkType>CHUNK_XML_LAST) {
-				throw new IOException("Invalid chunk type ("+chunkType+").");
-			}
-
-			if (chunkType == CHUNK_XML_START_TAG && event == -1) {
-				m_event = START_DOCUMENT;
-				break;
-			}
-
-			m_reader.skipInt();
-			int lineNumber = m_reader.readInt();
-			m_reader.skipInt();
-
-			if (chunkType == CHUNK_XML_START_NAMESPACE || chunkType == CHUNK_XML_END_NAMESPACE) {
-				if (chunkType == CHUNK_XML_START_NAMESPACE) {
-					int prefix = m_reader.readInt();
-					int uri = m_reader.readInt();
-					m_namespaces.push(prefix,uri);
-				} else {
-					m_reader.skipInt();
-					m_reader.skipInt();
-					m_namespaces.pop();
-				}
-				continue;
-			}
-
-			m_lineNumber = lineNumber;
-
-			if (chunkType == CHUNK_XML_START_TAG) {
-				m_namespaceUri = m_reader.readInt();
-				m_name = m_reader.readInt();
-				m_reader.skipInt();
-				int attributeCount = m_reader.readInt();
-				m_idAttribute = (attributeCount >>> 16)-1;
-				attributeCount&=0xFFFF;
-				m_classAttribute = m_reader.readInt();
-				m_styleAttribute = (m_classAttribute >>> 16)-1;
-				m_classAttribute = (m_classAttribute & 0xFFFF)-1;
-				m_attributes = m_reader.readIntArray(attributeCount*ATTRIBUTE_LENGHT);
-				for (int i=ATTRIBUTE_IX_VALUE_TYPE; i<m_attributes.length;) {
-					m_attributes[i] = (m_attributes[i] >>> 24);
-					i+=ATTRIBUTE_LENGHT;
-				}
-				m_namespaces.increaseDepth();
-				m_event = START_TAG;
-				break;
-			}
-
-			if (chunkType == CHUNK_XML_END_TAG) {
-				m_namespaceUri = m_reader.readInt();
-				m_name = m_reader.readInt();
-				m_event = END_TAG;
-				m_decreaseDepth=true;
-				break;
-			}
-
-			m_name = m_reader.readInt();
-			m_reader.skipInt();
-			m_reader.skipInt();
-			m_event = TEXT;
-			break;
-		}
+	@Override
+	public void setProperty(String name, Object value) throws XmlPullParserException {
+		throw new XmlPullParserException(E_NOT_SUPPORTED);
 	}
 
 }
