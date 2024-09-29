@@ -1,5 +1,7 @@
 package com.apk.axml.utils;
 
+import android.text.TextUtils;
+
 import java.io.IOException;
 
 public class AttrChunk extends Chunk<Chunk.EmptyHeader> {
