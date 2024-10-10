@@ -131,15 +131,9 @@ public class APKParser {
         return null;
     }
 
-    public static String getCertificateDetails(String apkPath, Context context) {
+    public static String getCertificateDetails(X509Certificate cert) {
         try {
             StringBuilder sb = new StringBuilder();
-            X509Certificate[] certs = getX509Certificates(new File(apkPath), context);
-            if (certs == null || certs.length < 1) {
-                return null;
-            }
-            X509Certificate cert = certs[0];
-
             PublicKey publickey = cert.getPublicKey();
             sb.append("Subject: ").append(cert.getSubjectDN().getName()).append("\n");
             sb.append("Issuer: ").append(cert.getIssuerDN().getName()).append("\n");
@@ -153,6 +147,20 @@ public class APKParser {
             sb.append("\nPublic Key\n").append(publickey.toString().split("=")[1].split(",")[0]).append("\n");
             return sb.toString();
         } catch (CertificateException | NoSuchAlgorithmException ignored) {
+            return null;
+        }
+    }
+
+    public static String getCertificateDetails(String apkPath, Context context) {
+        try {
+            X509Certificate[] certs = getX509Certificates(new File(apkPath), context);
+            if (certs == null || certs.length < 1) {
+                return null;
+            }
+            X509Certificate cert = certs[0];
+
+            return getCertificateDetails(cert);
+        } catch (CertificateException ignored) {
             return null;
         }
     }
