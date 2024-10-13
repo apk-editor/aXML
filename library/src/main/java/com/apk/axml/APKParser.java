@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.util.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -144,7 +145,7 @@ public class APKParser {
             sb.append("\nChecksums\n").append("MD5: ").append(getCertificateFingerprint(cert, "MD5").toLowerCase(Locale.ENGLISH)).append("\n");
             sb.append("SHA1: ").append(getCertificateFingerprint(cert, "SHA1").toLowerCase(Locale.ENGLISH)).append("\n");
             sb.append("SHA-256: ").append(getCertificateFingerprint(cert, "SHA-256").toLowerCase(Locale.ENGLISH)).append("\n");
-            sb.append("\nPublic Key\n").append(publickey.toString().split("=")[1].split(",")[0]).append("\n");
+            sb.append("\nPublic Key\n").append(Base64.encodeToString(publickey.getEncoded(), 0).replace("\n", "")).append("\n");
             return sb.toString();
         } catch (CertificateException | NoSuchAlgorithmException ignored) {
             return null;
