@@ -154,7 +154,7 @@ public class APKParser {
         }
     }
 
-    private static String getCertificateDetails(String rsaCertificatePath) {
+    public static String getCertificateDetails(String rsaCertificatePath) {
         try {
             FileInputStream fileInputStream = new FileInputStream(rsaCertificatePath);
             CertificateFactory certificateFactory = CertificateFactory.getInstance("x509");
