@@ -8,6 +8,8 @@ import android.util.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -148,6 +150,18 @@ public class APKParser {
             sb.append("\nPublic Key\n").append(Base64.encodeToString(publickey.getEncoded(), 0).replace("\n", "")).append("\n");
             return sb.toString();
         } catch (CertificateException | NoSuchAlgorithmException ignored) {
+            return null;
+        }
+    }
+
+    private static String getCertificateDetails(String rsaCertificatePath) {
+        try {
+            FileInputStream fileInputStream = new FileInputStream(rsaCertificatePath);
+            CertificateFactory certificateFactory = CertificateFactory.getInstance("x509");
+            X509Certificate cert = (X509Certificate) certificateFactory.generateCertificate(fileInputStream);
+
+            return getCertificateDetails(cert);
+        } catch (CertificateException | FileNotFoundException ignored) {
             return null;
         }
     }
