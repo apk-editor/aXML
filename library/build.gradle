@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace 'com.apk.axml'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         consumerProguardFiles("proguard-rules.pro")
