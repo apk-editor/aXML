@@ -1,6 +1,6 @@
 package com.apk.axml;
 
-import com.apk.axml.ARSCUtils.ArscFile;
+import com.apk.axml.ARSCUtils.ARSCFile;
 import com.apk.axml.ARSCUtils.ResTableEntry;
 
 import java.io.ByteArrayOutputStream;
@@ -33,9 +33,9 @@ public class ARSCDecoder {
         return result;
     }
 
-    private ArscFile arscFile() {
+    private ARSCFile arscFile() {
         try {
-            ArscFile arscFile = new ArscFile();
+            ARSCFile arscFile = new ARSCFile();
             arscFile.parse(getBytes());
             return arscFile;
         } catch (IOException | OutOfMemoryError ignored) {
@@ -44,7 +44,7 @@ public class ARSCDecoder {
     }
 
     public String getPublicXML() {
-        ArscFile arscFile = arscFile();
+        ARSCFile arscFile = arscFile();
         if (arscFile != null) {
             return Objects.requireNonNull(arscFile).buildPublicXml();
         } else {

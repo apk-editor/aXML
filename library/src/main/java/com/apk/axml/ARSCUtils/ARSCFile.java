@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 
 import java.io.IOException;
 
-public class ArscFile {
+public class ARSCFile {
 
     private static final int RES_TABLE_TYPE = 0x0002;
     private static final int RES_STRING_POOL_TYPE = 0x0001;
@@ -14,7 +14,7 @@ public class ArscFile {
     public ResStringPoolChunk resStringPoolChunk;
     public ResTablePackageChunk resTablePackageChunk;
 
-    public ArscFile() {
+    public ARSCFile() {
     }
 
     public void parse(byte[] sBuf) throws IOException {
