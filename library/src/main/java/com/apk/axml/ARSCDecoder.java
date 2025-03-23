@@ -4,8 +4,6 @@ import com.apk.axml.ARSCUtils.ArscFile;
 import com.apk.axml.ARSCUtils.ResTableEntry;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
@@ -16,22 +14,10 @@ import java.util.Objects;
  */
 public class ARSCDecoder {
 
-    private InputStream inputStream = null;
-
-    public ARSCDecoder(File file) {
-        try (FileInputStream fis = new FileInputStream(file)) {
-            this.inputStream = fis;
-        } catch (IOException ignored) {}
-    }
+    private final InputStream inputStream;
 
     public ARSCDecoder(InputStream inputStream) {
         this.inputStream = inputStream;
-    }
-
-    public ARSCDecoder(String path) {
-        try (FileInputStream fis = new FileInputStream(path)) {
-            this.inputStream = fis;
-        } catch (IOException ignored) {}
     }
 
     private byte[] getBytes() throws IOException {

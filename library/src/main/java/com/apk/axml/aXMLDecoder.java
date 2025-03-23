@@ -9,8 +9,6 @@ import com.apk.axml.aXMLUtils.TypedValue;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -21,22 +19,10 @@ import java.io.InputStream;
  */
 public class aXMLDecoder {
 
-	private InputStream inputStream = null;
-
-	public aXMLDecoder(File file) {
-		try (FileInputStream fis = new FileInputStream(file)) {
-			this.inputStream = fis;
-		} catch (IOException ignored) {}
-	}
+	private final InputStream inputStream;
 
 	public aXMLDecoder(InputStream inputStream) {
 		this.inputStream = inputStream;
-	}
-
-	public aXMLDecoder(String filePath) {
-		try (FileInputStream fis = new FileInputStream(filePath)) {
-			this.inputStream = fis;
-		} catch (IOException ignored) {}
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
