@@ -2,11 +2,11 @@ package com.apk.axml;
 
 import android.content.Context;
 
-import com.apk.axml.utils.Chunk;
-import com.apk.axml.utils.IntWriter;
-import com.apk.axml.utils.StringPoolChunk;
-import com.apk.axml.utils.TagChunk;
-import com.apk.axml.utils.XmlChunk;
+import com.apk.axml.aXMLUtils.Chunk;
+import com.apk.axml.aXMLUtils.IntWriter;
+import com.apk.axml.aXMLUtils.StringPoolChunk;
+import com.apk.axml.aXMLUtils.TagChunk;
+import com.apk.axml.aXMLUtils.XmlChunk;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;

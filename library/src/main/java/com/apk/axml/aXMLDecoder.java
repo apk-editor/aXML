@@ -3,12 +3,14 @@ package com.apk.axml;
 import android.annotation.TargetApi;
 import android.os.Build;
 
-import com.apk.axml.utils.AXmlResourceParser;
-import com.apk.axml.utils.TypedValue;
+import com.apk.axml.aXMLUtils.AXmlResourceParser;
+import com.apk.axml.aXMLUtils.TypedValue;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -19,11 +21,26 @@ import java.io.InputStream;
  */
 public class aXMLDecoder {
 
-	public aXMLDecoder() {
+	private InputStream inputStream = null;
+
+	public aXMLDecoder(File file) {
+		try (FileInputStream fis = new FileInputStream(file)) {
+			this.inputStream = fis;
+		} catch (IOException ignored) {}
+	}
+
+	public aXMLDecoder(InputStream inputStream) {
+		this.inputStream = inputStream;
+	}
+
+	public aXMLDecoder(String filePath) {
+		try (FileInputStream fis = new FileInputStream(filePath)) {
+			this.inputStream = fis;
+		} catch (IOException ignored) {}
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
-	public String decode(InputStream inputStream) throws XmlPullParserException, IOException {
+	public String decode() throws XmlPullParserException, IOException {
 		AXmlResourceParser parser = new AXmlResourceParser();
 		parser.open(inputStream);
 		StringBuilder indentation = new StringBuilder();
@@ -125,7 +142,7 @@ public class aXMLDecoder {
 				return "?" + String.format("%08x", attributeValueData);
 
 			case TypedValue.TYPE_REFERENCE:
-				return "@"+ String.format("%08x", attributeValueData);
+				return "@" + String.format("%08x", attributeValueData);
 
 			case TypedValue.TYPE_FLOAT:
 				return String.valueOf(Float.intBitsToFloat(attributeValueData));

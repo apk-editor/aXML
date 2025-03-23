@@ -1,4 +1,4 @@
-package com.apk.axml.utils;
+package com.apk.axml.aXMLUtils;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;

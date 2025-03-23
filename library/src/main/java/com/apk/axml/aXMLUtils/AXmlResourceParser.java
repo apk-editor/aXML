@@ -1,4 +1,4 @@
-package com.apk.axml.utils;
+package com.apk.axml.aXMLUtils;
 
 import android.annotation.TargetApi;
 import android.content.res.XmlResourceParser;

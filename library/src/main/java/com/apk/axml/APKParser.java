@@ -1,9 +1,11 @@
 package com.apk.axml;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.Base64;
 
 import java.io.ByteArrayInputStream;
@@ -34,7 +36,7 @@ public class APKParser {
     private static List<String> mPermissions = null;
     private static long mAPKSize = Integer.MIN_VALUE;
     private static String mAppName = null, mCertificate = null, mCompileSDK = null, mManifest = null, mMinSDK = null,
-            mPackageName = null, mVersionCode = null, mVersionName = null, mTarSDK = null;
+            mPackageName = null, mResDecoded = null, mVersionCode = null, mVersionName = null, mTarSDK = null;
 
     public APKParser() {
     }
@@ -96,6 +98,10 @@ public class APKParser {
         return mPackageName;
     }
 
+    public String getDecodedResources() {
+        return mResDecoded;
+    }
+
     public String getTargetSDKVersion() {
         return mTarSDK;
     }
@@ -134,6 +140,7 @@ public class APKParser {
         return null;
     }
 
+    @TargetApi(Build.VERSION_CODES.FROYO)
     public static String getCertificateDetails(X509Certificate cert) {
         try {
             StringBuilder sb = new StringBuilder();
@@ -189,6 +196,7 @@ public class APKParser {
         mManifest = null;
         mMinSDK = null;
         mPackageName = null;
+        mResDecoded = null;
         if (mPermissions == null) {
             mPermissions = new ArrayList<>();
         } else {
@@ -212,8 +220,10 @@ public class APKParser {
         mAPKSize = new File(apkPath).length();
 
         try (ZipFile zipFile = new ZipFile(apkPath)) {
-            InputStream inputStream = zipFile.getInputStream(zipFile.getEntry("AndroidManifest.xml"));
-            mManifest =  new aXMLDecoder().decode(inputStream).trim();
+            InputStream manifestStream = zipFile.getInputStream(zipFile.getEntry("AndroidManifest.xml"));
+            InputStream resStream = zipFile.getInputStream(zipFile.getEntry("resources.arsc"));
+            mManifest =  new aXMLDecoder(manifestStream).decode().trim();
+            mResDecoded = new ARSCDecoder(resStream).getPublicXML().trim();
         } catch (Exception ignored) {
         }
 

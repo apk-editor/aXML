@@ -1,4 +1,4 @@
-package com.apk.axml.utils;
+package com.apk.axml.aXMLUtils;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
