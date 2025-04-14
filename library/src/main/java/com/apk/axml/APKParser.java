@@ -210,11 +210,13 @@ public class APKParser {
     public void parse(String apkPath, Context context) {
         clean();
 
-        mAppName = getPackageManager(context).getApplicationLabel(getPackageInfo(apkPath, context).applicationInfo).toString();
-        mAppIcon = getPackageInfo(apkPath, context).applicationInfo.loadIcon(getPackageManager(context));
-        mPackageName = getPackageInfo(apkPath, context).packageName;
-        mVersionName = getPackageInfo(apkPath, context).versionName;
-        mVersionCode = String.valueOf(getPackageInfo(apkPath, context).versionCode);
+        PackageInfo packageInfo = getPackageInfo(apkPath, context);
+
+        mAppName = getPackageManager(context).getApplicationLabel(packageInfo.applicationInfo).toString();
+        mAppIcon = packageInfo.applicationInfo.loadIcon(getPackageManager(context));
+        mPackageName = packageInfo.packageName;
+        mVersionName = packageInfo.versionName;
+        mVersionCode = String.valueOf(packageInfo.versionCode);
         mCertificate = getCertificateDetails(apkPath, context);
 
         mAPKSize = new File(apkPath).length();
