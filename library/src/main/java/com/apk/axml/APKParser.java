@@ -35,7 +35,7 @@ public class APKParser {
     private static Drawable mAppIcon = null;
     private static List<String> mPermissions = null;
     private static long mAPKSize = Integer.MIN_VALUE;
-    private static String mAppName = null, mCertificate = null, mCompileSDK = null, mManifest = null, mMinSDK = null,
+    private static String mApkPath = null, mAppName = null, mCertificate = null, mCompileSDK = null, mManifest = null, mMinSDK = null,
             mPackageName = null, mResDecoded = null, mVersionCode = null, mVersionName = null, mTarSDK = null;
 
     public APKParser() {
@@ -49,6 +49,13 @@ public class APKParser {
         return mAppIcon;
     }
 
+    public File getApkFile() {
+        if (isParsed()) {
+            return new File(mApkPath);
+        }
+        return null;
+    }
+
     public List<String> getPermissions() {
         return mPermissions;
     }
@@ -59,6 +66,13 @@ public class APKParser {
 
     private static PackageManager getPackageManager(Context context) {
         return context.getPackageManager();
+    }
+
+    public String getApkPath() {
+        if (isParsed()) {
+            return mApkPath;
+        }
+        return null;
     }
 
     public String getAppName() {
@@ -211,7 +225,8 @@ public class APKParser {
         clean();
 
         PackageInfo packageInfo = getPackageInfo(apkPath, context);
-
+        
+        mApkPath = apkPath;
         mAppName = getPackageManager(context).getApplicationLabel(packageInfo.applicationInfo).toString();
         mAppIcon = packageInfo.applicationInfo.loadIcon(getPackageManager(context));
         mPackageName = packageInfo.packageName;
