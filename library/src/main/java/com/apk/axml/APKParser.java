@@ -8,10 +8,14 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.Base64;
 
+import com.apk.axml.serializableItems.ResEntry;
+import com.apk.axml.serializableItems.XMLItems;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -24,7 +28,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /*
@@ -32,11 +36,15 @@ import java.util.zip.ZipFile;
  */
 public class APKParser {
 
+    private static boolean mAppNameParsed = false;
     private static Drawable mAppIcon = null;
     private static List<String> mPermissions = null;
     private static long mAPKSize = Integer.MIN_VALUE;
-    private static String mApkPath = null, mAppName = null, mCertificate = null, mCompileSDK = null, mManifest = null, mMinSDK = null,
-            mPackageName = null, mResDecoded = null, mVersionCode = null, mVersionName = null, mTarSDK = null;
+    private static List<ResEntry> mResDecoded = null;
+    private static List<XMLItems> mManifest = null;
+    private static String mApkPath = null, mAppName = null, mCertificate = null, mCompileSDK = null, mMinSDK = null,
+            mPackageName = null, mVersionCode = null, mVersionName = null, mTarSDK = null;
+    private static ZipFile mZipFile = null;
 
     public APKParser() {
     }
@@ -47,6 +55,13 @@ public class APKParser {
 
     public Drawable getAppIcon() {
         return mAppIcon;
+    }
+
+    private static Drawable getAppIcon(PackageInfo packageInfo, InputStream is, Context context) {
+        if (mResDecoded != null) {
+            return Drawable.createFromStream(is, null);
+        }
+        return mAppIcon = packageInfo.applicationInfo.loadIcon(getPackageManager(context));
     }
 
     public File getApkFile() {
@@ -100,7 +115,11 @@ public class APKParser {
         return hash;
     }
 
-    public String getManifest() {
+    public List<ResEntry> getDecodedResources() {
+        return mResDecoded;
+    }
+
+    public List<XMLItems> getManifest() {
         return mManifest;
     }
 
@@ -110,10 +129,6 @@ public class APKParser {
 
     public String getPackageName() {
         return mPackageName;
-    }
-
-    public String getDecodedResources() {
-        return mResDecoded;
     }
 
     public String getTargetSDKVersion() {
@@ -202,6 +217,7 @@ public class APKParser {
     }
 
     private static void clean() {
+        mAppNameParsed = false;
         mAppIcon = null;
         mAPKSize = Integer.MIN_VALUE;
         mAppName = null;
@@ -221,42 +237,76 @@ public class APKParser {
         mTarSDK = null;
     }
 
+    private ZipFile getZipFile(String apkPath) throws IOException {
+        return new ZipFile(apkPath);
+    }
+
     public void parse(String apkPath, Context context) {
         clean();
 
         PackageInfo packageInfo = getPackageInfo(apkPath, context);
-        
+
         mApkPath = apkPath;
-        mAppName = getPackageManager(context).getApplicationLabel(packageInfo.applicationInfo).toString();
-        mAppIcon = packageInfo.applicationInfo.loadIcon(getPackageManager(context));
-        mPackageName = packageInfo.packageName;
-        mVersionName = packageInfo.versionName;
-        mVersionCode = String.valueOf(packageInfo.versionCode);
         mCertificate = getCertificateDetails(apkPath, context);
 
         mAPKSize = new File(apkPath).length();
 
-        try (ZipFile zipFile = new ZipFile(apkPath)) {
-            InputStream manifestStream = zipFile.getInputStream(zipFile.getEntry("AndroidManifest.xml"));
-            InputStream resStream = zipFile.getInputStream(zipFile.getEntry("resources.arsc"));
-            mManifest =  new aXMLDecoder(manifestStream).decode().trim();
-            mResDecoded = new ARSCDecoder(resStream).getPublicXML().trim();
-        } catch (Exception ignored) {
-        }
+        try {
+            mZipFile = getZipFile(apkPath);
+            InputStream manifestStream = null, resStream = null;
+            ZipEntry manifestEntry = mZipFile.getEntry("AndroidManifest.xml");
+            ZipEntry resEntry = mZipFile.getEntry("resources.arsc");
+            if (manifestEntry != null) {
+                manifestStream = mZipFile.getInputStream(mZipFile.getEntry("AndroidManifest.xml"));
+            }
+            if (resEntry != null) {
+                resStream = mZipFile.getInputStream(mZipFile.getEntry("resources.arsc"));
+            }
+            if (manifestStream != null) {
+                mResDecoded = new ResourceTableParser(resStream).parse();
+                mManifest = new aXMLDecoder(manifestStream, mResDecoded != null ? mResDecoded : null).decode();
+            }
+        } catch (Exception ignored) {}
 
         if (mManifest != null) {
-            for (String line : Objects.requireNonNull(mManifest).trim().split("\\r?\\n")) {
-                if (line.trim().startsWith("android:name=\"") && line.contains(".permission.")) {
-                    mPermissions.add(line.replace("android:name=", "").replace("\"", "").trim());
-                } else if (line.trim().startsWith("android:compileSdkVersion=\"")) {
-                    mCompileSDK = line.replace("android:compileSdkVersion=", "").replace("\"", "").trim();
-                } else if (line.trim().startsWith("android:minSdkVersion=\"")) {
-                    mMinSDK = line.replace("android:minSdkVersion=", "").replace("\"", "").trim();
-                } else if (line.trim().startsWith("android:targetSdkVersion=\"")) {
-                    mTarSDK = line.replace("android:targetSdkVersion=", "").replace("\"", "").trim();
+            for (XMLItems items : mManifest) {
+                if (items.getTag().trim().equals("android:label") && !mAppNameParsed) {
+                    if (mResDecoded != null) {
+                        mAppName = items.getValue(mResDecoded);
+                    } else {
+                        mAppName = getPackageManager(context).getApplicationLabel(packageInfo.applicationInfo).toString();
+                    }
+                    mAppNameParsed = true;
+                } else if (items.getTag().trim().equals("android:icon")) {
+                    try {
+                        InputStream iconStream;
+                        if (items.getValue(mResDecoded) != null) {
+                            ZipEntry iconEntry = mZipFile.getEntry(items.getValue(mResDecoded));
+                            if (iconEntry != null) {
+                                iconStream = mZipFile.getInputStream(iconEntry);
+                                if (iconStream != null) {
+                                    mAppIcon = getAppIcon(packageInfo, iconStream, context);
+                                }
+                            }
+                        }
+                    } catch (IOException ignored) {
+                        mAppIcon = packageInfo.applicationInfo.loadIcon(getPackageManager(context));
+                    }
+                } else if (items.getTag().trim().equals("android:name") && items.getValue().contains(".permission.")) {
+                    mPermissions.add(items.getValue());
+                } else if (items.getTag().trim().equals("android:compileSdkVersion")) {
+                    mCompileSDK = items.getValue();
+                } else if (items.getTag().trim().equals("android:minSdkVersion")) {
+                    mMinSDK = items.getValue();
+                } else if (items.getTag().trim().equals("android:targetSdkVersion")) {
+                    mTarSDK = items.getValue();
                 }
             }
         }
+
+        mPackageName = packageInfo.packageName;
+        mVersionName = packageInfo.versionName;
+        mVersionCode = String.valueOf(packageInfo.versionCode);
     }
 
 }
