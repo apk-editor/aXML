@@ -151,7 +151,7 @@ public class aXMLDecoder {
 				if (entries != null) {
 					for (ResEntry e : entries) {
 						if (e.getResourceId() == data) {
-							return e.getValue() != null ? e.getValue() : e.getName() != null ? e.getName() : e.getResAttr();
+							return e.getValue() != null ? e.getValue() : e.getName() != null ? "?" + e.getName() : e.getResAttr();
 						}
 					}
 				}
