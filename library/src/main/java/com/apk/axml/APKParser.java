@@ -279,7 +279,7 @@ public class APKParser {
             for (XMLEntry items : mManifest) {
                 if (items.getTag().trim().equals("android:label") && !mAppNameParsed) {
                     if (mResDecoded != null) {
-                        mAppName = items.getValue(mResDecoded);
+                        mAppName = items.getValue();
                     } else {
                         mAppName = getPackageManager(context).getApplicationLabel(packageInfo.applicationInfo).toString();
                     }
@@ -287,8 +287,8 @@ public class APKParser {
                 } else if (items.getTag().trim().equals("android:icon")) {
                     try {
                         InputStream iconStream;
-                        if (items.getValue(mResDecoded) != null) {
-                            ZipEntry iconEntry = mZipFile.getEntry(items.getValue(mResDecoded));
+                        if (items.getValue() != null) {
+                            ZipEntry iconEntry = mZipFile.getEntry(items.getValue());
                             if (iconEntry != null) {
                                 iconStream = mZipFile.getInputStream(iconEntry);
                                 if (iconStream != null) {
