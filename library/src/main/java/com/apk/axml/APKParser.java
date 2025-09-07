@@ -58,11 +58,21 @@ public class APKParser {
         return mAppIcon;
     }
 
-    private static Drawable getAppIcon(PackageInfo packageInfo, InputStream is, Context context) {
-        if (mResDecoded != null) {
-            return Drawable.createFromStream(is, null);
+    private static Drawable getAppIcon(XMLEntry items) {
+        try {
+            InputStream iconStream;
+            if (items.getValue() != null) {
+                ZipEntry iconEntry = mZipFile.getEntry(items.getValue());
+                if (iconEntry != null) {
+                    iconStream = mZipFile.getInputStream(iconEntry);
+                    if (iconStream != null) {
+                        return Drawable.createFromStream(iconStream, null);
+                    }
+                }
+            }
+        } catch (IOException ignored) {
         }
-        return mAppIcon = packageInfo.applicationInfo.loadIcon(getPackageManager(context));
+        return null;
     }
 
     public File getApkFile() {
@@ -285,18 +295,9 @@ public class APKParser {
                     }
                     mAppNameParsed = true;
                 } else if (items.getTag().trim().equals("android:icon")) {
-                    try {
-                        InputStream iconStream;
-                        if (items.getValue() != null) {
-                            ZipEntry iconEntry = mZipFile.getEntry(items.getValue());
-                            if (iconEntry != null) {
-                                iconStream = mZipFile.getInputStream(iconEntry);
-                                if (iconStream != null) {
-                                    mAppIcon = getAppIcon(packageInfo, iconStream, context);
-                                }
-                            }
-                        }
-                    } catch (IOException ignored) {
+                    if (mResDecoded != null && getAppIcon(items) != null) {
+                        mAppIcon = getAppIcon(items);
+                    } else {
                         mAppIcon = packageInfo.applicationInfo.loadIcon(getPackageManager(context));
                     }
                 } else if (items.getTag().trim().equals("android:name") && items.getValue().contains(".permission.")) {
