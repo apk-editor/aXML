@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.Base64;
 
+import com.apk.axml.aXMLUtils.Utils;
 import com.apk.axml.serializableItems.ResEntry;
 import com.apk.axml.serializableItems.XMLEntry;
 
@@ -42,8 +43,8 @@ public class APKParser {
     private static long mAPKSize = Integer.MIN_VALUE;
     private static List<ResEntry> mResDecoded = null;
     private static List<XMLEntry> mManifest = null;
-    private static String mApkPath = null, mAppName = null, mCertificate = null, mCompileSDK = null, mMinSDK = null,
-            mPackageName = null, mVersionCode = null, mVersionName = null, mTarSDK = null;
+    private static String mApkPath = null, mAppName = null, mCertificate = null, mCompileSDK = null, mManifestAsString = null,
+            mMinSDK = null, mPackageName = null, mVersionCode = null, mVersionName = null, mTarSDK = null;
     private static ZipFile mZipFile = null;
 
     public APKParser() {
@@ -121,6 +122,10 @@ public class APKParser {
 
     public List<XMLEntry> getManifest() {
         return mManifest;
+    }
+
+    public String getManifestAsString() {
+        return mManifestAsString;
     }
 
     public String getMinSDKVersion() {
@@ -224,6 +229,7 @@ public class APKParser {
         mCertificate = null;
         mCompileSDK = null;
         mManifest = null;
+        mManifestAsString = null;
         mMinSDK = null;
         mPackageName = null;
         mResDecoded = null;
@@ -265,6 +271,7 @@ public class APKParser {
             if (manifestStream != null) {
                 mResDecoded = new ResourceTableParser(resStream).parse();
                 mManifest = new aXMLDecoder(manifestStream, mResDecoded != null ? mResDecoded : null).decode();
+                mManifestAsString = Utils.decodeAsString(mManifest);
             }
         } catch (Exception ignored) {}
 

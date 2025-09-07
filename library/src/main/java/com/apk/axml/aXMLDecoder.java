@@ -125,6 +125,10 @@ public class aXMLDecoder {
 		return result;
 	}
 
+	public String decodeAsString() throws XmlPullParserException, IOException {
+		return Utils.decodeAsString(decode());
+	}
+
 	private static String getAttributeValue(AXmlResourceParser parser, List<ResEntry> entries, int index) {
 		final int type = parser.getAttributeValueType(index);
 		final int data = parser.getAttributeValueData(index);
