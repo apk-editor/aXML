@@ -6,13 +6,13 @@ import java.util.List;
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on Sept. 06, 2025
  */
-public class XMLItems implements Serializable {
+public class XMLEntry implements Serializable {
 
     private final String mTag;
     private final String mMiddleTag, mEndTag;
     private String mValue;
 
-    public XMLItems(String tag, String middleTag, String value, String endTag) {
+    public XMLEntry(String tag, String middleTag, String value, String endTag) {
         this.mTag = tag;
         this.mMiddleTag = middleTag;
         this.mValue = value;

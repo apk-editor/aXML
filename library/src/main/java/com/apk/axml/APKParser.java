@@ -9,7 +9,7 @@ import android.os.Build;
 import android.util.Base64;
 
 import com.apk.axml.serializableItems.ResEntry;
-import com.apk.axml.serializableItems.XMLItems;
+import com.apk.axml.serializableItems.XMLEntry;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -41,7 +41,7 @@ public class APKParser {
     private static List<String> mPermissions = null;
     private static long mAPKSize = Integer.MIN_VALUE;
     private static List<ResEntry> mResDecoded = null;
-    private static List<XMLItems> mManifest = null;
+    private static List<XMLEntry> mManifest = null;
     private static String mApkPath = null, mAppName = null, mCertificate = null, mCompileSDK = null, mMinSDK = null,
             mPackageName = null, mVersionCode = null, mVersionName = null, mTarSDK = null;
     private static ZipFile mZipFile = null;
@@ -119,7 +119,7 @@ public class APKParser {
         return mResDecoded;
     }
 
-    public List<XMLItems> getManifest() {
+    public List<XMLEntry> getManifest() {
         return mManifest;
     }
 
@@ -269,7 +269,7 @@ public class APKParser {
         } catch (Exception ignored) {}
 
         if (mManifest != null) {
-            for (XMLItems items : mManifest) {
+            for (XMLEntry items : mManifest) {
                 if (items.getTag().trim().equals("android:label") && !mAppNameParsed) {
                     if (mResDecoded != null) {
                         mAppName = items.getValue(mResDecoded);

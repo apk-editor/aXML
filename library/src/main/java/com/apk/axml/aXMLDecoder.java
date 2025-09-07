@@ -7,7 +7,7 @@ import android.util.TypedValue;
 import com.apk.axml.aXMLUtils.AXmlResourceParser;
 import com.apk.axml.serializableItems.ResEntry;
 import com.apk.axml.aXMLUtils.Utils;
-import com.apk.axml.serializableItems.XMLItems;
+import com.apk.axml.serializableItems.XMLEntry;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -42,10 +42,10 @@ public class aXMLDecoder {
 	}
 
 	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
-    public List<XMLItems> decode() throws XmlPullParserException, IOException {
+    public List<XMLEntry> decode() throws XmlPullParserException, IOException {
 		byte[] bytes = Utils.toByteArray(inputStream);
 		Set<String> usedPrefixes = collectUsedPrefixes(bytes);
-		List<XMLItems> result = new ArrayList<>();
+		List<XMLEntry> result = new ArrayList<>();
 		Deque<OpenElem> stack = new ArrayDeque<>();
 
 		AXmlResourceParser parser = new AXmlResourceParser();
@@ -63,16 +63,16 @@ public class aXMLDecoder {
 				String indent = indent(depth);
 				if (!stack.isEmpty()) Objects.requireNonNull(stack.peek()).hadChildren = true;
 
-				result.add(new XMLItems(indent + "<" + tag, "", "", ""));
+				result.add(new XMLEntry(indent + "<" + tag, "", "", ""));
 
 				if (!rootEmitted) {
 					if (usedPrefixes.contains("android"))
-						result.add(new XMLItems(indent + "    xmlns:android","=\"","http://schemas.android.com/apk/res/android","\""));
+						result.add(new XMLEntry(indent + "    xmlns:android","=\"","http://schemas.android.com/apk/res/android","\""));
 					if (usedPrefixes.contains("tools"))
-						result.add(new XMLItems(indent + "    xmlns:tools","=\"","http://schemas.android.com/tools","\""));
+						result.add(new XMLEntry(indent + "    xmlns:tools","=\"","http://schemas.android.com/tools","\""));
 					for (String p : usedPrefixes)
 						if (!p.equals("android") && !p.equals("tools"))
-							result.add(new XMLItems(indent + "    xmlns:" + p,"=\"","http://schemas.android.com/apk/res-auto","\""));
+							result.add(new XMLEntry(indent + "    xmlns:" + p,"=\"","http://schemas.android.com/apk/res-auto","\""));
 					rootEmitted = true;
 				}
 
@@ -82,7 +82,7 @@ public class aXMLDecoder {
 					String name = parser.getAttributeName(i);
 					String fullName = (prefix != null && !prefix.isEmpty()) ? prefix + ":" + name : name;
 					String value = getAttributeValue(parser, resourceEntries, i);
-					result.add(new XMLItems(indent + "    " + fullName,"=\"",value,"\""));
+					result.add(new XMLEntry(indent + "    " + fullName,"=\"",value,"\""));
 				}
 
 				int closeIndex = result.size() - 1;
@@ -94,30 +94,30 @@ public class aXMLDecoder {
 				String indent = indent(depth);
 
 				OpenElem open = stack.pop();
-				XMLItems lastItem = result.get(open.closeIndex);
+				XMLEntry lastItem = result.get(open.closeIndex);
 
 				if (!open.hadChildren) {
 					if ("=\"".equals(lastItem.getMiddleTag()))
 						result.set(open.closeIndex,
-								new XMLItems(lastItem.getTag(), lastItem.getMiddleTag(), lastItem.getValue(), lastItem.getEndTag() + "/>"));
+								new XMLEntry(lastItem.getTag(), lastItem.getMiddleTag(), lastItem.getValue(), lastItem.getEndTag() + "/>"));
 					else
 						result.set(open.closeIndex,
-								new XMLItems(lastItem.getTag() + "/>", lastItem.getMiddleTag(), lastItem.getValue(), lastItem.getEndTag()));
+								new XMLEntry(lastItem.getTag() + "/>", lastItem.getMiddleTag(), lastItem.getValue(), lastItem.getEndTag()));
 				} else {
 					if ("=\"".equals(lastItem.getMiddleTag()))
 						result.set(open.closeIndex,
-								new XMLItems(lastItem.getTag(), lastItem.getMiddleTag(), lastItem.getValue(), lastItem.getEndTag() + ">"));
+								new XMLEntry(lastItem.getTag(), lastItem.getMiddleTag(), lastItem.getValue(), lastItem.getEndTag() + ">"));
 					else
 						result.set(open.closeIndex,
-								new XMLItems(lastItem.getTag() + ">", lastItem.getMiddleTag(), lastItem.getValue(), lastItem.getEndTag()));
-					result.add(new XMLItems(indent + "</" + tag + ">", "", "", ""));
+								new XMLEntry(lastItem.getTag() + ">", lastItem.getMiddleTag(), lastItem.getValue(), lastItem.getEndTag()));
+					result.add(new XMLEntry(indent + "</" + tag + ">", "", "", ""));
 				}
 
 			} else if (type == XmlPullParser.TEXT) {
 				if (!stack.isEmpty()) Objects.requireNonNull(stack.peek()).hadChildren = true;
 				String text = parser.getText();
 				if (text != null && !text.isEmpty())
-					result.add(new XMLItems(indent(parser.getDepth()-1) + escapeText(text),"","",""));
+					result.add(new XMLEntry(indent(parser.getDepth()-1) + escapeText(text),"","",""));
 			}
 		}
 
