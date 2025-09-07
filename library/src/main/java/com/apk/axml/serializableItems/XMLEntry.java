@@ -27,6 +27,13 @@ public class XMLEntry implements Serializable {
         return isBoolean() && mValue.equalsIgnoreCase("true");
     }
 
+    private boolean isDecoded(String stringResource) {
+        if (stringResource == null || stringResource.trim().isEmpty()) {
+            return false;
+        }
+        return stringResource.startsWith("@") || stringResource.startsWith("?@") || stringResource.startsWith("res/");
+    }
+
     public String getText() {
         return mTag + mMiddleTag + mValue + mEndTag;
     }
@@ -36,31 +43,17 @@ public class XMLEntry implements Serializable {
     }
 
     public String getAttrValue(List<ResEntry> resourceMap, String stringResource) {
-        if (stringResource == null || !stringResource.startsWith("@")) {
+        if (!isDecoded(stringResource)) {
             return stringResource;
         }
 
         for (ResEntry entry : resourceMap) {
-            if (stringResource.equals(entry.getName())) {
+            if (stringResource.equals(entry.getName()) || stringResource.equals(entry.getValue())) {
                 return entry.getResAttr();
             }
         }
 
         return stringResource;
-    }
-
-    public String getValue(List<ResEntry> resourceMap) {
-        if (mValue == null || !mValue.startsWith("@")) {
-            return mValue;
-        }
-
-        for (ResEntry entry : resourceMap) {
-            if (mValue.equals(entry.getName())) {
-                return entry.getValue();
-            }
-        }
-
-        return mValue;
     }
 
     public String getTag() {
