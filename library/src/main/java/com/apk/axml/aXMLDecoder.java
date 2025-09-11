@@ -176,10 +176,16 @@ public class aXMLDecoder {
 				return Integer.toString(data);
 
 			case TypedValue.TYPE_INT_COLOR_ARGB8:
+				return String.format("#%08X", data); // AARRGGBB
+
 			case TypedValue.TYPE_INT_COLOR_RGB8:
+				return String.format("#%06X", data & 0x00FFFFFF); // RRGGBB
+
 			case TypedValue.TYPE_INT_COLOR_ARGB4:
+				return String.format("#%04X", data & 0x0000FFFF); // ARGB (4 bits each)
+
 			case TypedValue.TYPE_INT_COLOR_RGB4:
-				return String.format("#%08X", data);
+				return String.format("#%03X", data & 0x00000FFF); // RGB (4 bits each)
 
 			default:
 				String v = parser.getAttributeValue(index);
