@@ -142,11 +142,22 @@ public class ResourceTableParser {
         }
 
         int configSize = le.u32();
-        if (configSize < 4 || !le.hasRemaining(configSize - 4)) {
+        byte[] configData = le.bytes(configSize - 4);
+
+        // Check if configData represents "default"
+        boolean isDefaultConfig = true;
+        for (byte b : configData) {
+            if (b != 0) {
+                isDefaultConfig = false;
+                break;
+            }
+        }
+
+        if (!isDefaultConfig) {
+            // Skip this type chunk completely
             le.seek(typeHdr.start + typeHdr.size);
             return;
         }
-        le.skip(configSize - 4);
 
         // Offsets array must fit; clamp entryCount if necessary
         int offsetsStartPos = le.pos;
