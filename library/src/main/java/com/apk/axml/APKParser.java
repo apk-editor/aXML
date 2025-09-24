@@ -205,14 +205,22 @@ public class APKParser {
         }
     }
 
+    public static String getCertificateDetails(InputStream certStream) {
+        try {
+            CertificateFactory certificateFactory = CertificateFactory.getInstance("x509");
+            X509Certificate cert = (X509Certificate) certificateFactory.generateCertificate(certStream);
+
+            return getCertificateDetails(cert);
+        } catch (CertificateException ignored) {
+            return null;
+        }
+    }
+
     public static String getCertificateDetails(String rsaCertificatePath) {
         try {
             FileInputStream fileInputStream = new FileInputStream(rsaCertificatePath);
-            CertificateFactory certificateFactory = CertificateFactory.getInstance("x509");
-            X509Certificate cert = (X509Certificate) certificateFactory.generateCertificate(fileInputStream);
-
-            return getCertificateDetails(cert);
-        } catch (CertificateException | FileNotFoundException ignored) {
+            return getCertificateDetails(fileInputStream);
+        } catch (FileNotFoundException ignored) {
             return null;
         }
     }
