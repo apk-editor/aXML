@@ -145,16 +145,19 @@ public class ResourceTableParser {
         byte[] configData = le.bytes(configSize - 4);
 
         // Check if configData represents "default"
-        boolean isDefaultConfig = true;
-        for (byte b : configData) {
-            if (b != 0) {
-                isDefaultConfig = false;
-                break;
+        boolean hasLocale = false;
+        if (configSize >= 8) { // config struct at least this big
+            byte lang0 = configData[2];
+            byte lang1 = configData[3];
+            byte country0 = configData[4];
+            byte country1 = configData[5];
+            if (lang0 != 0 || lang1 != 0 || country0 != 0 || country1 != 0) {
+                hasLocale = true;
             }
         }
 
-        if (!isDefaultConfig) {
-            // Skip this type chunk completely
+        if (hasLocale) {
+            // skip chunks that have an explicit locale
             le.seek(typeHdr.start + typeHdr.size);
             return;
         }
