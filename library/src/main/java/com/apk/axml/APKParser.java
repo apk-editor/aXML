@@ -1,12 +1,13 @@
 package com.apk.axml;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.Base64;
+
+import androidx.annotation.RequiresApi;
 
 import com.apk.axml.aXMLUtils.Utils;
 import com.apk.axml.serializableItems.ResEntry;
@@ -184,7 +185,7 @@ public class APKParser {
         return null;
     }
 
-    @TargetApi(Build.VERSION_CODES.FROYO)
+    @RequiresApi(api = Build.VERSION_CODES.FROYO)
     public static String getCertificateDetails(X509Certificate cert) {
         try {
             StringBuilder sb = new StringBuilder();
@@ -205,6 +206,7 @@ public class APKParser {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.FROYO)
     public static String getCertificateDetails(InputStream certStream) {
         try {
             CertificateFactory certificateFactory = CertificateFactory.getInstance("x509");
@@ -216,6 +218,7 @@ public class APKParser {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.FROYO)
     public static String getCertificateDetails(String rsaCertificatePath) {
         try {
             FileInputStream fileInputStream = new FileInputStream(rsaCertificatePath);
@@ -225,6 +228,7 @@ public class APKParser {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.FROYO)
     public static String getCertificateDetails(String apkPath, Context context) {
         try {
             X509Certificate[] certs = getX509Certificates(new File(apkPath), context);
@@ -265,6 +269,7 @@ public class APKParser {
         return new ZipFile(apkPath);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.FROYO)
     public void parse(String apkPath, Context context) {
         clean();
 

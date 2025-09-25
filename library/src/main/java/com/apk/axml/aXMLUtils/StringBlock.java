@@ -1,7 +1,8 @@
 package com.apk.axml.aXMLUtils;
 
-import android.annotation.TargetApi;
 import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -46,6 +47,7 @@ public class StringBlock {
         return block;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public String getString(int index) {
         if (index < 0 || m_stringOffsets == null || index >= m_stringOffsets.length) {
             return null;
@@ -64,7 +66,7 @@ public class StringBlock {
         return decodeString(offset, length);
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private String decodeString(int offset, int length) {
         try {
             return (m_isUTF8 ? StandardCharsets.UTF_8.newDecoder() : StandardCharsets.UTF_16LE.newDecoder()).decode(

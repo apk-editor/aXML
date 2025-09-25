@@ -1,5 +1,9 @@
 package com.apk.axml.serializableItems;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -27,6 +31,7 @@ public class XMLEntry implements Serializable {
         return isBoolean() && mValue.equalsIgnoreCase("true");
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     private boolean isDecoded(String stringResource) {
         if (stringResource == null || stringResource.trim().isEmpty()) {
             return false;
@@ -38,10 +43,12 @@ public class XMLEntry implements Serializable {
         return mTag + mMiddleTag + mValue + mEndTag;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     public String getText(List<ResEntry> resourceMap) {
         return mTag + mMiddleTag + getAttrValue(resourceMap, mValue) + mEndTag;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     public String getAttrValue(List<ResEntry> resourceMap, String stringResource) {
         if (!isDecoded(stringResource)) {
             return stringResource;

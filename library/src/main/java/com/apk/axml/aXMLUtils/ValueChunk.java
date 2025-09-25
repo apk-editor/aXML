@@ -1,8 +1,9 @@
 package com.apk.axml.aXMLUtils;
 
-import android.annotation.TargetApi;
 import android.graphics.Color;
 import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -21,7 +22,7 @@ public class ValueChunk extends Chunk<Chunk.EmptyHeader> {
         int pos;
         String val;
 
-        @TargetApi(Build.VERSION_CODES.GINGERBREAD)
+        @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
         public ValPair(Matcher m) {
             int c = m.groupCount();
             for (int i = 1; i <= c; ++i) {
@@ -56,6 +57,7 @@ public class ValueChunk extends Chunk<Chunk.EmptyHeader> {
         this.attrChunk = parent;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     @Override
     public void preWrite() {
         evaluate();
@@ -126,7 +128,7 @@ public class ValueChunk extends Chunk<Chunk.EmptyHeader> {
         return val.substring(0, val.length() - number);
     }
 
-    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     public void evaluate() {
         Matcher m = explicitType.matcher(attrChunk.rawValue);
         if (m.find()) {

@@ -1,7 +1,8 @@
 package com.apk.axml;
 
-import android.annotation.TargetApi;
 import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 import com.apk.axml.serializableItems.ResEntry;
 import com.apk.axml.aXMLUtils.Utils;
@@ -67,6 +68,8 @@ public class ResourceTableParser {
         return out;
     }
 
+
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     private void parsePackage(LE le, List<ResEntry> out, StringPool globalPool) {
         ChunkHeader pkgHdr = ChunkHeader.read(le);
         int pkgStart = pkgHdr.start, pkgEnd = pkgHdr.start + pkgHdr.size;
@@ -235,7 +238,7 @@ public class ResourceTableParser {
         le.seek(typeHdr.start + typeHdr.size);
     }
 
-    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     private static String sanitizePackage(String pkg) {
         if (pkg == null) return "app";
         int nul = pkg.indexOf('\0');
@@ -307,7 +310,7 @@ public class ResourceTableParser {
             le.seek(hdr.start + hdr.size);
             return new StringPool(out);
         }
-        @TargetApi(Build.VERSION_CODES.KITKAT)
+        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         private static String readUtf8(LE le) {
             int _utf16len = readLength8Safe(le); // length in utf16 chars (not always used)
             int utf8len = readLength8Safe(le);
@@ -321,7 +324,7 @@ public class ResourceTableParser {
             if ((a & 0x80) == 0) return a;
             return ((a & 0x7F) << 7) | (le.u8() & 0x7F);
         }
-        @TargetApi(Build.VERSION_CODES.KITKAT)
+        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         private static String readUtf16(LE le) {
             int u16len = readLength16Safe(le);
             if (!le.hasRemaining(u16len * 2 + 2)) return "";
@@ -380,7 +383,7 @@ public class ResourceTableParser {
             require(4); long v = (a[pos] & 0xFFL) | ((a[pos+1] & 0xFFL) << 8) | ((a[pos+2] & 0xFFL) << 16) | ((a[pos+3] & 0xFFL) << 24); pos += 4; return (int) v;
         }
 
-        @TargetApi(Build.VERSION_CODES.GINGERBREAD)
+        @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
         byte[] bytes(int len) {
             require(len); byte[] b = Arrays.copyOfRange(a, pos, pos + len); pos += len; return b;
         }

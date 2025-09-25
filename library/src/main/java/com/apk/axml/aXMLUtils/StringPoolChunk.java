@@ -1,9 +1,10 @@
 package com.apk.axml.aXMLUtils;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.text.TextUtils;
+
+import androidx.annotation.RequiresApi;
 
 import com.apk.axml.aXMLEncoder;
 
@@ -97,7 +98,7 @@ public class StringPoolChunk extends Chunk<StringPoolChunk.H> {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void preWrite() {
         rawStrings = new ArrayList<>();

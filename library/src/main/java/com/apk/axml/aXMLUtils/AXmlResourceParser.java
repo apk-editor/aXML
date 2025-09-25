@@ -1,8 +1,9 @@
 package com.apk.axml.aXMLUtils;
 
-import android.annotation.TargetApi;
 import android.content.res.XmlResourceParser;
 import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +12,7 @@ import java.io.Reader;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-@TargetApi(Build.VERSION_CODES.KITKAT)
+@RequiresApi(api = Build.VERSION_CODES.KITKAT)
 public class AXmlResourceParser implements XmlResourceParser, AutoCloseable {
 
 	private static final int CHUNK_AXML_FILE = 524291,

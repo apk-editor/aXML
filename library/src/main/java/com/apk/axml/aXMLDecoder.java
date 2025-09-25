@@ -1,8 +1,9 @@
 package com.apk.axml;
 
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.util.TypedValue;
+
+import androidx.annotation.RequiresApi;
 
 import com.apk.axml.aXMLUtils.AXmlResourceParser;
 import com.apk.axml.serializableItems.ResEntry;
@@ -41,7 +42,7 @@ public class aXMLDecoder {
 		this.resourceEntries = resourceEntries;
 	}
 
-	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+	@RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     public List<XMLEntry> decode() throws XmlPullParserException, IOException {
 		byte[] bytes = Utils.toByteArray(inputStream);
 		Set<String> usedPrefixes = collectUsedPrefixes(bytes);
@@ -125,7 +126,8 @@ public class aXMLDecoder {
 		return result;
 	}
 
-	public String decodeAsString() throws XmlPullParserException, IOException {
+	@RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
+    public String decodeAsString() throws XmlPullParserException, IOException {
 		return Utils.decodeAsString(decode());
 	}
 
@@ -193,7 +195,7 @@ public class aXMLDecoder {
 		}
 	}
 
-	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+	@RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     private static Set<String> collectUsedPrefixes(byte[] bytes) throws XmlPullParserException, IOException {
 		Set<String> prefixes = new LinkedHashSet<>();
 		AXmlResourceParser p = new AXmlResourceParser();
