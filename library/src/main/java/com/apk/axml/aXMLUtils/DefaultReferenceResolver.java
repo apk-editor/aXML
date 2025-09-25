@@ -21,8 +21,7 @@ public class DefaultReferenceResolver implements ReferenceResolver {
 
         try {
             return Integer.parseInt(Objects.requireNonNull(name), aXMLEncoder.Config.defaultReferenceRadix);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
 
         @SuppressLint("DiscouragedApi")
