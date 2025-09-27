@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.UUID;
 
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on Sept. 06, 2025
@@ -13,7 +14,7 @@ import java.util.List;
 public class XMLEntry implements Serializable {
 
     private final String mTag;
-    private final String mMiddleTag, mEndTag;
+    private final String mID = UUID.randomUUID().toString(), mMiddleTag, mEndTag;
     private String mValue;
 
     public XMLEntry(String tag, String middleTag, String value, String endTag) {
@@ -29,6 +30,14 @@ public class XMLEntry implements Serializable {
 
     public boolean isChecked() {
         return isBoolean() && mValue.equalsIgnoreCase("true");
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
+    public boolean isEmpty() {
+        return mTag.trim().isEmpty()
+                && mMiddleTag.trim().isEmpty()
+                && mValue.trim().isEmpty()
+                && mEndTag.trim().isEmpty();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
@@ -61,6 +70,10 @@ public class XMLEntry implements Serializable {
         }
 
         return stringResource;
+    }
+
+    public String getId() {
+        return mID;
     }
 
     public String getTag() {
