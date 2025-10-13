@@ -42,7 +42,7 @@ public class aXMLDecoder {
 		this.resourceEntries = resourceEntries;
 	}
 
-	@RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
+	@RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public List<XMLEntry> decode() throws XmlPullParserException, IOException {
 		byte[] bytes = Utils.toByteArray(inputStream);
 		Set<String> usedPrefixes = collectUsedPrefixes(bytes);
@@ -126,12 +126,13 @@ public class aXMLDecoder {
 		return result;
 	}
 
-	@RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
+	@RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public String decodeAsString() throws XmlPullParserException, IOException {
 		return Utils.decodeAsString(decode());
 	}
 
-	private static String getAttributeValue(AXmlResourceParser parser, List<ResEntry> entries, int index) {
+	@RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private static String getAttributeValue(AXmlResourceParser parser, List<ResEntry> entries, int index) {
 		final int type = parser.getAttributeValueType(index);
 		final int data = parser.getAttributeValueData(index);
 
@@ -195,7 +196,7 @@ public class aXMLDecoder {
 		}
 	}
 
-	@RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
+	@RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private static Set<String> collectUsedPrefixes(byte[] bytes) throws XmlPullParserException, IOException {
 		Set<String> prefixes = new LinkedHashSet<>();
 		AXmlResourceParser p = new AXmlResourceParser();

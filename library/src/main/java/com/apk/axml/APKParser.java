@@ -245,7 +245,7 @@ public class APKParser {
         return new ZipFile(apkPath);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public void parse(String apkPath, Context context) {
         clean();
 

@@ -13,8 +13,7 @@ import java.util.UUID;
  */
 public class XMLEntry implements Serializable {
 
-    private final String mTag;
-    private final String mID = UUID.randomUUID().toString(), mMiddleTag, mEndTag;
+    private final String mTag, mID = UUID.randomUUID().toString(), mMiddleTag, mEndTag;
     private String mValue;
 
     public XMLEntry(String tag, String middleTag, String value, String endTag) {

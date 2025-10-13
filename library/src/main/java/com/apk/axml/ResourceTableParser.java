@@ -33,6 +33,7 @@ public class ResourceTableParser {
         this.data = Utils.toByteArray(resStream);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public List<ResEntry> parse() {
         LE le = new LE(data);
         List<ResEntry> out = new ArrayList<>();
@@ -69,7 +70,7 @@ public class ResourceTableParser {
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void parsePackage(LE le, List<ResEntry> out, StringPool globalPool) {
         ChunkHeader pkgHdr = ChunkHeader.read(le);
         int pkgStart = pkgHdr.start, pkgEnd = pkgHdr.start + pkgHdr.size;
@@ -119,6 +120,7 @@ public class ResourceTableParser {
         le.seek(pkgEnd);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     private void parseTypeChunk(LE le, int packageId, @SuppressWarnings("unused") String _packageName,
                                 StringPool typePool, StringPool keyPool,
                                 StringPool globalPool,
@@ -282,6 +284,7 @@ public class ResourceTableParser {
         private StringPool(List<String> strings) {
             this.strings=strings;
         }
+        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         static StringPool read(LE le) {
             ChunkHeader hdr = ChunkHeader.read(le);
             if (hdr.type != RES_STRING_POOL_TYPE) throw new IllegalStateException("Expected STRING_POOL");
