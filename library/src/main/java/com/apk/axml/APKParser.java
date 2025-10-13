@@ -1,6 +1,7 @@
 package com.apk.axml;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -30,6 +31,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -38,7 +40,6 @@ import java.util.zip.ZipFile;
  */
 public class APKParser {
 
-    private static boolean mAppNameParsed = false;
     private static Drawable mAppIcon = null;
     private static List<String> mPermissions = null;
     private static long mAPKSize = Integer.MIN_VALUE;
@@ -46,7 +47,6 @@ public class APKParser {
     private static List<XMLEntry> mManifest = null;
     private static String mApkPath = null, mAppName = null, mCertificate = null, mCompileSDK = null, mManifestAsString = null,
             mMinSDK = null, mPackageName = null, mVersionCode = null, mVersionName = null, mTarSDK = null;
-    private static ZipFile mZipFile = null;
 
     public APKParser() {
     }
@@ -59,28 +59,8 @@ public class APKParser {
         return mAppIcon;
     }
 
-    private static Drawable getAppIcon(XMLEntry items) {
-        try {
-            InputStream iconStream;
-            if (items.getValue() != null) {
-                ZipEntry iconEntry = mZipFile.getEntry(items.getValue());
-                if (iconEntry != null) {
-                    iconStream = mZipFile.getInputStream(iconEntry);
-                    if (iconStream != null) {
-                        return Drawable.createFromStream(iconStream, null);
-                    }
-                }
-            }
-        } catch (IOException ignored) {
-        }
-        return null;
-    }
-
     public File getApkFile() {
-        if (isParsed()) {
-            return new File(mApkPath);
-        }
-        return null;
+        return new File(mApkPath);
     }
 
     public List<String> getPermissions() {
@@ -96,10 +76,7 @@ public class APKParser {
     }
 
     public String getApkPath() {
-        if (isParsed()) {
-            return mApkPath;
-        }
-        return null;
+        return mApkPath;
     }
 
     public String getAppName() {
@@ -244,7 +221,6 @@ public class APKParser {
     }
 
     private static void clean() {
-        mAppNameParsed = false;
         mAppIcon = null;
         mAPKSize = Integer.MIN_VALUE;
         mAppName = null;
@@ -269,7 +245,7 @@ public class APKParser {
         return new ZipFile(apkPath);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.FROYO)
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     public void parse(String apkPath, Context context) {
         clean();
 
@@ -281,7 +257,7 @@ public class APKParser {
         mAPKSize = new File(apkPath).length();
 
         try {
-            mZipFile = getZipFile(apkPath);
+            ZipFile mZipFile = getZipFile(apkPath);
             InputStream manifestStream = null, resStream = null;
             ZipEntry manifestEntry = mZipFile.getEntry("AndroidManifest.xml");
             ZipEntry resEntry = mZipFile.getEntry("resources.arsc");
@@ -298,22 +274,16 @@ public class APKParser {
             }
         } catch (Exception ignored) {}
 
+        PackageManager pm = getPackageManager(context);
+        ApplicationInfo ai = getPackageInfo(apkPath, context).applicationInfo;
+        ai.sourceDir = apkPath;
+        ai.publicSourceDir = apkPath;
+        mAppName = pm.getApplicationLabel(Objects.requireNonNull(ai)).toString();
+        mAppIcon = pm.getApplicationIcon(Objects.requireNonNull(ai));
+
         if (mManifest != null) {
             for (XMLEntry items : mManifest) {
-                if (items.getTag().trim().equals("android:label") && !mAppNameParsed) {
-                    if (mResDecoded != null) {
-                        mAppName = items.getValue();
-                    } else {
-                        mAppName = getPackageManager(context).getApplicationLabel(packageInfo.applicationInfo).toString();
-                    }
-                    mAppNameParsed = true;
-                } else if (items.getTag().trim().equals("android:icon")) {
-                    if (mResDecoded != null && getAppIcon(items) != null) {
-                        mAppIcon = getAppIcon(items);
-                    } else {
-                        mAppIcon = packageInfo.applicationInfo.loadIcon(getPackageManager(context));
-                    }
-                } else if (items.getTag().trim().equals("android:name") && items.getValue().contains(".permission.")) {
+                if (items.getTag().trim().equals("android:name") && items.getValue().contains(".permission.")) {
                     mPermissions.add(items.getValue());
                 } else if (items.getTag().trim().equals("android:compileSdkVersion")) {
                     mCompileSDK = items.getValue();
