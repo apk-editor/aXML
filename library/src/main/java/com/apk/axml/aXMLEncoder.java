@@ -6,7 +6,9 @@ import com.apk.axml.aXMLUtils.Chunk;
 import com.apk.axml.aXMLUtils.IntWriter;
 import com.apk.axml.aXMLUtils.StringPoolChunk;
 import com.apk.axml.aXMLUtils.TagChunk;
+import com.apk.axml.aXMLUtils.Utils;
 import com.apk.axml.aXMLUtils.XmlChunk;
+import com.apk.axml.serializableItems.XMLEntry;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -15,6 +17,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.List;
 
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 22, 2023
@@ -28,15 +31,23 @@ public class aXMLEncoder {
         public static int defaultReferenceRadix = 16;
     }
 
-    public byte[] encodeString(Context context, String xml) throws XmlPullParserException, IOException {
+    public byte[] encodeString(List<XMLEntry> xmlEntries, Context context) throws XmlPullParserException, IOException {
+        XmlPullParserFactory f = XmlPullParserFactory.newInstance();
+        f.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES,true);
+        XmlPullParser p = f.newPullParser();
+        p.setInput(new StringReader(Utils.decodeAsString(xmlEntries)));
+        return encode(p, context);
+    }
+
+    public byte[] encodeString(String xml, Context context) throws XmlPullParserException, IOException {
         XmlPullParserFactory f = XmlPullParserFactory.newInstance();
         f.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES,true);
         XmlPullParser p = f.newPullParser();
         p.setInput(new StringReader(xml));
-        return encode(context,p);
+        return encode(p, context);
     }
 
-    private static byte[] encode(Context context, XmlPullParser p) throws XmlPullParserException, IOException {
+    private static byte[] encode(XmlPullParser p, Context context) throws XmlPullParserException, IOException {
         XmlChunk chunk = new XmlChunk(context);
         TagChunk current = null;
         for (int i=p.getEventType(); i!=XmlPullParser.END_DOCUMENT; i=p.next()) {

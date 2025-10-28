@@ -99,7 +99,7 @@ public static boolean isXMLValid(String xmlString) {
 ```java
 try (FileOutputStream fos = new FileOutputStream(pathToaXMLFile)) {
     aXMLEncoder encoder = new aXMLEncoder();
-    byte[] data = encoder.encodeString(activity, xmlString);
+    byte[] data = encoder.encodeString(xmlString, context);
     fos.write(data);
 } catch (IOException | XmlPullParserException e) {
     // Handle exception
