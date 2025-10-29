@@ -1,9 +1,12 @@
 package com.apk.axml;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ProviderInfo;
+import android.content.pm.ServiceInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.Base64;
@@ -29,6 +32,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -43,7 +47,10 @@ public class APKParser {
     private static Drawable mAppIcon = null;
     private static List<String> mPermissions = null;
     private static long mAPKSize = Integer.MIN_VALUE;
+    private static List<ActivityInfo> mActivities = null, mReceivers = null;
+    private static List<ProviderInfo> mProviders = null;
     private static List<ResEntry> mResDecoded = null;
+    private static List<ServiceInfo> mServices = null;
     private static List<XMLEntry> mManifest = null;
     private static String mApkPath = null, mAppName = null, mCertificate = null, mCompileSDK = null, mManifestAsString = null,
             mMinSDK = null, mPackageName = null, mVersionCode = null, mVersionName = null, mTarSDK = null;
@@ -63,12 +70,24 @@ public class APKParser {
         return new File(mApkPath);
     }
 
-    public List<String> getPermissions() {
-        return mPermissions;
+    public List<ActivityInfo> getActivities() {
+        return mActivities;
     }
 
-    private static PackageInfo getPackageInfo(String apkPath, Context context) {
-        return getPackageManager(context).getPackageArchiveInfo(apkPath, 0);
+    public List<ActivityInfo> getReceivers() {
+        return mReceivers;
+    }
+
+    public List<ProviderInfo> getProviders() {
+        return mProviders;
+    }
+
+    public List<ServiceInfo> getServices() {
+        return mServices;
+    }
+
+    public List<String> getPermissions() {
+        return mPermissions;
     }
 
     private static PackageManager getPackageManager(Context context) {
@@ -134,6 +153,46 @@ public class APKParser {
 
     public String getVersionName() {
         return mVersionName;
+    }
+
+    private static List<ActivityInfo> getActivities(String apkPath, Context context) {
+        PackageInfo packageInfo = getPackageManager(context).getPackageArchiveInfo(apkPath, PackageManager.GET_ACTIVITIES);
+        if (packageInfo != null && packageInfo.activities != null) {
+            return new ArrayList<>(Arrays.asList(packageInfo.activities));
+        }
+        return null;
+    }
+
+    private static List<ActivityInfo> getReceivers(String apkPath, Context context) {
+        PackageInfo packageInfo = getPackageManager(context).getPackageArchiveInfo(apkPath, PackageManager.GET_RECEIVERS);
+        if (packageInfo != null && packageInfo.receivers != null) {
+            return new ArrayList<>(Arrays.asList(packageInfo.receivers));
+        }
+        return null;
+    }
+
+    private static List<ProviderInfo> getProviders(String apkPath, Context context) {
+        PackageInfo packageInfo = getPackageManager(context).getPackageArchiveInfo(apkPath, PackageManager.GET_PROVIDERS);
+        if (packageInfo != null && packageInfo.providers != null) {
+            return new ArrayList<>(Arrays.asList(packageInfo.providers));
+        }
+        return null;
+    }
+
+    private static List<ServiceInfo> getServices(String apkPath, Context context) {
+        PackageInfo packageInfo = getPackageManager(context).getPackageArchiveInfo(apkPath, PackageManager.GET_SERVICES);
+        if (packageInfo != null && packageInfo.services != null) {
+            return new ArrayList<>(Arrays.asList(packageInfo.services));
+        }
+        return null;
+    }
+
+    private static List<String> getPermissions(String apkPath, Context context) {
+        PackageInfo packageInfo = getPackageManager(context).getPackageArchiveInfo(apkPath, PackageManager.GET_PERMISSIONS);
+        if (packageInfo != null && packageInfo.requestedPermissions != null) {
+            return new ArrayList<>(Arrays.asList(packageInfo.requestedPermissions));
+        }
+        return null;
     }
 
     private static String toHexString(byte[] bytes) {
@@ -249,7 +308,7 @@ public class APKParser {
     public void parse(String apkPath, Context context) {
         clean();
 
-        PackageInfo packageInfo = getPackageInfo(apkPath, context);
+        PackageInfo packageInfo = getPackageManager(context).getPackageArchiveInfo(apkPath, PackageManager.GET_META_DATA);
 
         mApkPath = apkPath;
         mCertificate = getCertificateDetails(apkPath, context);
@@ -275,25 +334,24 @@ public class APKParser {
         } catch (Exception ignored) {}
 
         PackageManager pm = getPackageManager(context);
-        ApplicationInfo ai = getPackageInfo(apkPath, context).applicationInfo;
+        ApplicationInfo ai = Objects.requireNonNull(packageInfo).applicationInfo;
         ai.sourceDir = apkPath;
         ai.publicSourceDir = apkPath;
         mAppName = pm.getApplicationLabel(Objects.requireNonNull(ai)).toString();
         mAppIcon = pm.getApplicationIcon(Objects.requireNonNull(ai));
+        mActivities = getActivities(apkPath, context);
+        mProviders = getProviders(apkPath, context);
+        mReceivers = getReceivers(apkPath, context);
+        mServices = getServices(apkPath, context);
+        mPermissions = getPermissions(apkPath, context);
 
-        if (mManifest != null) {
-            for (XMLEntry items : mManifest) {
-                if (items.getTag().trim().equals("android:name") && items.getValue().contains(".permission.")) {
-                    mPermissions.add(items.getValue());
-                } else if (items.getTag().trim().equals("android:compileSdkVersion")) {
-                    mCompileSDK = items.getValue();
-                } else if (items.getTag().trim().equals("android:minSdkVersion")) {
-                    mMinSDK = items.getValue();
-                } else if (items.getTag().trim().equals("android:targetSdkVersion")) {
-                    mTarSDK = items.getValue();
-                }
-            }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            mMinSDK = String.valueOf(ai.minSdkVersion);
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            mCompileSDK = String.valueOf(ai.compileSdkVersion);
+        }
+        mTarSDK = String.valueOf(ai.targetSdkVersion);
 
         mPackageName = packageInfo.packageName;
         mVersionName = packageInfo.versionName;
