@@ -1,5 +1,6 @@
 package com.apk.axml;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
@@ -7,8 +8,12 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ServiceInfo;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
+import android.os.ParcelFileDescriptor;
+import android.provider.OpenableColumns;
 import android.util.Base64;
 
 import androidx.annotation.RequiresApi;
@@ -18,6 +23,7 @@ import com.apk.axml.serializableItems.ResEntry;
 import com.apk.axml.serializableItems.XMLEntry;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -38,12 +44,14 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 25, 2023
  */
 public class APKParser {
 
+    private static boolean mAppNameParsed = false;
     private static Drawable mAppIcon = null;
     private static List<String> mPermissions = null;
     private static long mAPKSize = Integer.MIN_VALUE;
@@ -90,10 +98,6 @@ public class APKParser {
         return mPermissions;
     }
 
-    private static PackageManager getPackageManager(Context context) {
-        return context.getPackageManager();
-    }
-
     public String getApkPath() {
         return mApkPath;
     }
@@ -112,15 +116,6 @@ public class APKParser {
 
     public String getCertificate() {
         return mCertificate;
-    }
-
-    private static String getCertificateFingerprint(X509Certificate cert, String hashAlgorithm) throws NoSuchAlgorithmException, CertificateEncodingException {
-        String hash;
-        MessageDigest md = MessageDigest.getInstance(hashAlgorithm);
-        byte[] rawCert = cert.getEncoded();
-        hash = toHexString(md.digest(rawCert));
-        md.reset();
-        return hash;
     }
 
     public List<ResEntry> getDecodedResources() {
@@ -153,6 +148,36 @@ public class APKParser {
 
     public String getVersionName() {
         return mVersionName;
+    }
+
+    private ZipFile getZipFile(String apkPath) throws IOException {
+        return new ZipFile(apkPath);
+    }
+
+    private static Drawable getAppIcon(InputStream apkStream, String iconRef) throws IOException {
+        if (iconRef.startsWith("res/") && (iconRef.endsWith(".png") || iconRef.endsWith(".webp"))) {
+            try (ZipInputStream zis = new ZipInputStream(apkStream)) {
+
+                ZipEntry entry;
+                while ((entry = zis.getNextEntry()) != null) {
+                    String name = entry.getName();
+                    if (name.contains(iconRef)) {
+                        return Drawable.createFromStream(copyEntryStream(zis), name);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static InputStream copyEntryStream(ZipInputStream zis) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] tmp = new byte[4096];
+        int len;
+        while ((len = zis.read(tmp)) != -1) {
+            buffer.write(tmp, 0, len);
+        }
+        return new ByteArrayInputStream(buffer.toByteArray());
     }
 
     private static List<ActivityInfo> getActivities(String apkPath, Context context) {
@@ -195,30 +220,13 @@ public class APKParser {
         return null;
     }
 
+    private static PackageManager getPackageManager(Context context) {
+        return context.getPackageManager();
+    }
+
     private static String toHexString(byte[] bytes) {
         BigInteger bi = new BigInteger(1, bytes);
         return String.format("%0" + (bytes.length << 1) + "X", bi);
-    }
-
-    private static X509Certificate[] getX509Certificates(File apkFile, Context context) throws CertificateException {
-        X509Certificate[] certs;
-        CertificateFactory certificateFactory;
-        certificateFactory = CertificateFactory.getInstance("X509");
-
-        PackageInfo packageInfo = null;
-        if (apkFile != null && apkFile.exists()) {
-            packageInfo = context.getPackageManager().getPackageArchiveInfo(apkFile.getAbsolutePath(), PackageManager.GET_SIGNATURES);
-        }
-        if (packageInfo != null) {
-            certs = new X509Certificate[packageInfo.signatures.length];
-            for (int i = 0; i < certs.length; i++) {
-                byte[] cert = packageInfo.signatures[i].toByteArray();
-                InputStream inStream = new ByteArrayInputStream(cert);
-                certs[i] = (X509Certificate) certificateFactory.generateCertificate(inStream);
-            }
-            return certs;
-        }
-        return null;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.FROYO)
@@ -279,7 +287,38 @@ public class APKParser {
         }
     }
 
+    private static String getCertificateFingerprint(X509Certificate cert, String hashAlgorithm) throws NoSuchAlgorithmException, CertificateEncodingException {
+        String hash;
+        MessageDigest md = MessageDigest.getInstance(hashAlgorithm);
+        byte[] rawCert = cert.getEncoded();
+        hash = toHexString(md.digest(rawCert));
+        md.reset();
+        return hash;
+    }
+
+    private static X509Certificate[] getX509Certificates(File apkFile, Context context) throws CertificateException {
+        X509Certificate[] certs;
+        CertificateFactory certificateFactory;
+        certificateFactory = CertificateFactory.getInstance("X509");
+
+        PackageInfo packageInfo = null;
+        if (apkFile != null && apkFile.exists()) {
+            packageInfo = context.getPackageManager().getPackageArchiveInfo(apkFile.getAbsolutePath(), PackageManager.GET_SIGNATURES);
+        }
+        if (packageInfo != null) {
+            certs = new X509Certificate[packageInfo.signatures.length];
+            for (int i = 0; i < certs.length; i++) {
+                byte[] cert = packageInfo.signatures[i].toByteArray();
+                InputStream inStream = new ByteArrayInputStream(cert);
+                certs[i] = (X509Certificate) certificateFactory.generateCertificate(inStream);
+            }
+            return certs;
+        }
+        return null;
+    }
+
     private static void clean() {
+        mAppNameParsed = false;
         mAppIcon = null;
         mAPKSize = Integer.MIN_VALUE;
         mAppName = null;
@@ -300,8 +339,48 @@ public class APKParser {
         mTarSDK = null;
     }
 
-    private ZipFile getZipFile(String apkPath) throws IOException {
-        return new ZipFile(apkPath);
+    private static void extractManifestInfo(Uri apkUri, List<XMLEntry> manifestEntries, Context context) throws IOException {
+        if (manifestEntries == null) return;
+
+        for (XMLEntry entry : manifestEntries) {
+            String tag = entry.getTag().trim();
+            String value = entry.getValue();
+
+            switch (tag) {
+                case "package":
+                    mPackageName = value;
+                    break;
+                case "android:label":
+                    if (!mAppNameParsed && !value.startsWith("@")) {
+                        mAppName = value;
+                        mAppNameParsed = true;
+                    }
+                    break;
+                case "android:name":
+                    if (value != null && value.contains(".permission.")) {
+                        mPermissions.add(value);
+                    }
+                    break;
+                case "android:icon":
+                    mAppIcon = getAppIcon(context.getContentResolver().openInputStream(apkUri), value);
+                    break;
+                case "android:versionName":
+                    mVersionName = value;
+                    break;
+                case "android:versionCode":
+                    mVersionCode = value;
+                    break;
+                case "android:compileSdkVersion":
+                    mCompileSDK = value;
+                    break;
+                case "android:minSdkVersion":
+                    mMinSDK = value;
+                    break;
+                case "android:targetSdkVersion":
+                    mTarSDK = value;
+                    break;
+            }
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -356,6 +435,78 @@ public class APKParser {
         mPackageName = packageInfo.packageName;
         mVersionName = packageInfo.versionName;
         mVersionCode = String.valueOf(packageInfo.versionCode);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    public void parse(Uri apkUri, Context context) {
+        clean();
+        String scheme = apkUri.getScheme();
+
+        if (Build.VERSION.SDK_INT >= 36) {
+            if ("file".equals(scheme)) {
+                parse(apkUri.getPath(), context);
+                return;
+            }
+
+            if ("content".equals(scheme)) {
+                ContentResolver resolver = context.getContentResolver();
+                try (Cursor cursor = resolver.query(apkUri, new String[] {
+                        OpenableColumns.DISPLAY_NAME
+                }, null, null, null)) {
+                    if (cursor != null && cursor.moveToFirst()) {
+                        int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+                        if (sizeIndex != -1) {
+                            mAPKSize = cursor.getLong(sizeIndex);
+                        }
+                        int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                        if (nameIndex != -1) {
+                            mAppName = cursor.getString(nameIndex);
+                        }
+                    }
+                }
+
+                try (ZipInputStream zis = new ZipInputStream(resolver.openInputStream(apkUri))) {
+                    InputStream manifestStream = null;
+                    InputStream resStream = null;
+                    InputStream certStream = null;
+
+                    ZipEntry entry;
+                    while ((entry = zis.getNextEntry()) != null) {
+                        switch (entry.getName()) {
+                            case "AndroidManifest.xml":
+                                manifestStream = copyEntryStream(zis);
+                                break;
+                            case "resources.arsc":
+                                resStream = copyEntryStream(zis);
+                                break;
+                            default:
+                                if (entry.getName().startsWith("META-INF/") && entry.getName().endsWith(".RSA")) {
+                                    certStream = copyEntryStream(zis);
+                                }
+                                break;
+                        }
+                    }
+
+                    // Process collected streams
+                    if (certStream != null) mCertificate = getCertificateDetails(certStream);
+                    if (resStream != null) mResDecoded = new ResourceTableParser(resStream).parse();
+                    if (manifestStream != null) {
+                        mManifest = new aXMLDecoder(manifestStream, mResDecoded).decode();
+                        mManifestAsString = Utils.decodeAsString(mManifest);
+                    }
+
+                    if (mManifest != null) {
+                        extractManifestInfo(apkUri, mManifest, context);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        } else {
+            try (ParcelFileDescriptor fd = context.getContentResolver().openFileDescriptor(apkUri, "r")) {
+                parse("/proc/self/fd/" + Objects.requireNonNull(fd).getFd(), context);
+            } catch (IOException ignored) {
+            }
+        }
     }
 
 }
