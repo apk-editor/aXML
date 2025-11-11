@@ -442,13 +442,10 @@ public class APKParser {
         clean();
         String scheme = apkUri.getScheme();
 
-        if (Build.VERSION.SDK_INT >= 36) {
-            if ("file".equals(scheme)) {
-                parse(apkUri.getPath(), context);
-                return;
-            }
-
-            if ("content".equals(scheme)) {
+        if ("file".equals(scheme)) {
+            parse(apkUri.getPath(), context);
+        } else if ("content".equals(scheme)) {
+            if (Build.VERSION.SDK_INT >= 36) {
                 ContentResolver resolver = context.getContentResolver();
                 try (Cursor cursor = resolver.query(apkUri, new String[] {
                         OpenableColumns.DISPLAY_NAME
@@ -500,11 +497,11 @@ public class APKParser {
                     }
                 } catch (Exception ignored) {
                 }
-            }
-        } else {
-            try (ParcelFileDescriptor fd = context.getContentResolver().openFileDescriptor(apkUri, "r")) {
-                parse("/proc/self/fd/" + Objects.requireNonNull(fd).getFd(), context);
-            } catch (IOException ignored) {
+            } else {
+                try (ParcelFileDescriptor fd = context.getContentResolver().openFileDescriptor(apkUri, "r")) {
+                    parse("/proc/self/fd/" + Objects.requireNonNull(fd).getFd(), context);
+                } catch (IOException ignored) {
+                }
             }
         }
     }
