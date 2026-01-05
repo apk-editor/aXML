@@ -240,9 +240,9 @@ public class APKParser {
             sb.append("Expiry Date: ").append(cert.getNotAfter().toString()).append("\n");
             sb.append("Algorithm: ").append(cert.getSigAlgName()).append(", Type: ").append(publickey.getFormat()).append(", Version: ").append(cert.getVersion()).append("\n");
             sb.append("Serial Number: ").append(cert.getSerialNumber().toString(16)).append("\n");
-            sb.append("\nChecksums\n").append("MD5: ").append(getCertificateFingerprint(cert, "MD5").toLowerCase(Locale.ENGLISH)).append("\n");
-            sb.append("SHA1: ").append(getCertificateFingerprint(cert, "SHA1").toLowerCase(Locale.ENGLISH)).append("\n");
-            sb.append("SHA-256: ").append(getCertificateFingerprint(cert, "SHA-256").toLowerCase(Locale.ENGLISH)).append("\n");
+            sb.append("\nChecksums\n").append("MD5: ").append(getCertificateFingerprint(cert, "MD5").toLowerCase(Locale.getDefault())).append("\n");
+            sb.append("SHA1: ").append(getCertificateFingerprint(cert, "SHA1").toLowerCase(Locale.getDefault())).append("\n");
+            sb.append("SHA-256: ").append(getCertificateFingerprint(cert, "SHA-256").toLowerCase(Locale.getDefault())).append("\n");
             sb.append("\nPublic Key\n").append(Base64.encodeToString(publickey.getEncoded(), 0).replace("\n", "")).append("\n");
             return sb.toString();
         } catch (CertificateException | NoSuchAlgorithmException ignored) {
