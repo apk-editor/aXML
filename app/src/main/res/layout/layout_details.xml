@@ -1,0 +1,25 @@
+<androidx.appcompat.widget.LinearLayoutCompat
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_marginHorizontal="10dp"
+    android:layout_marginVertical="5dp"
+    android:gravity="start|center"
+    android:orientation="vertical" >
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="25dp"
+        android:textColor="?attr/colorPrimary"
+        android:layout_marginVertical="10dp"
+        android:textStyle="bold|italic"
+        android:layout_gravity="start"
+        android:textAllCaps="true"
+        android:ellipsize="start"
+        android:textSize="17sp"
+        android:maxLines="1" />
+
+    <include layout="@layout/layout_recyclerview" />
+</androidx.appcompat.widget.LinearLayoutCompat>

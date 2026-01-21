@@ -3,10 +3,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url 'https://jitpack.io'
-        }
     }
 }
 rootProject.name = "aXML"
-include ':library'
+include(
+        ":app",
+        ":library"
+)

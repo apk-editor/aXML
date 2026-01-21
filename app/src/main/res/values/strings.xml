@@ -1,0 +1,37 @@
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+
+    <string name="app_name" translatable="false">aXML Editor</string>
+    <string name="apply">Apply</string>
+    <string name="applying_modifications_message">Applying modifications…</string>
+    <string name="cancel">Cancel</string>
+    <string name="copyright_text">Copyright: © 2026, APK Explorer &amp; Editor</string>
+    <string name="discard">Discard</string>
+    <string name="discard_file_message">Discard the changes made on this file?</string>
+    <string name="exit">Exit</string>
+    <string name="exit_confirmation_message">Press back again to exit…</string>
+    <string name="exist_project_message">Any changes you’ve made are saved locally at: \'Download → aXML Editor → %s\'\n\nImportant: aXML Editor does not store your APK files. To continue working on this project later, please make sure to reopen the same APK file.</string>
+    <string name="exist_project_title">Are you sure you want to exit this project?</string>
+    <string name="file_save_question">Save the following file to device storage?</string>
+    <string name="file_saved_message">The selected file is saved to: \'Download → aXML Editor → %s\'</string>
+    <string name="file_type_invalid_toast">Invalid file. Please select a valid binary XML or APK file…</string>
+    <string name="loading">Loading…</string>
+    <string name="modifications_none_toast">There are no changes to build…</string>
+    <string name="modified_apk_generated_message">Your modified APK has been generated and signed successfully.\n\nThe APK has been saved to: \'Download → aXML Editor\'\n\nNote: You may need to uninstall any existing version of this app before installing, due to a signature mismatch.</string>
+    <string name="page_title_apk_info">APK Info</string>
+    <string name="page_title_axml">aXML\'s</string>
+    <string name="page_title_images">Images</string>
+    <string name="page_title_misc">Misc files</string>
+    <string name="page_title_texts">Texts</string>
+    <string name="remove_line">Remove line</string>
+    <string name="remove_line_question">Remove the following line from this XML?</string>
+    <string name="replace">Replace</string>
+    <string name="replace_image">Replace image</string>
+    <string name="replace_image_question">Replace with the selected image?</string>
+    <string name="restore_original">Restore original</string>
+    <string name="save">Save</string>
+    <string name="saving">Saving…</string>
+    <string name="search">Search</string>
+    <string name="select_file_message">Click here to select a binary XML or an APK file</string>
+    <string name="xml_corrupted_toast">XML string is corrupted. Aborting…</string>
+    <string name="xml_modify_title">Modify this value to</string>
+</resources>

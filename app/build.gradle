@@ -1,0 +1,34 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdk 36
+    namespace 'com.apk.axmleditor'
+
+    defaultConfig {
+        applicationId "com.apk.axmleditor"
+        minSdkVersion 23
+        targetSdk 34
+        versionCode 1
+        versionName "v0.1"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+}
+
+dependencies {
+    implementation (project(':library'))
+    implementation 'com.android.tools.build:apksig:8.13.2'
+    implementation 'com.google.android.material:material:1.13.0'
+}

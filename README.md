@@ -9,6 +9,11 @@ Originally developed for [APK Explorer & Editor](https://github.com/apk-editor/A
 
 ---
 
+## 🧪 Demo
+
+A sample app is available in the [app](https://github.com/apk-editor/aXML/tree/master/app) directory.
+---
+
 ## 📦 Installation
 
 ### 🪜 Step 1: Add the JitPack repository to your root-level `build.gradle`
@@ -150,7 +155,7 @@ if (apkParser.isParsed()) {
 ## 📜 License
 
 ```
-Copyright (C) 2023-2025 APK Explorer & Editor <apkeditor@protonmail.com>
+Copyright (C) 2023-2026 APK Explorer & Editor <apkeditor@protonmail.com>
 
 aXML is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by

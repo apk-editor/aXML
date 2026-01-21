@@ -1,0 +1,37 @@
+<androidx.appcompat.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:padding="10dp">
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:text="@string/select_file_message"
+        android:textStyle="bold|italic"
+        app:icon="@mipmap/ic_launcher"
+        android:textAllCaps="false"
+        android:clickable="false"
+        android:gravity="center"
+        android:textSize="17sp"
+        app:cornerRadius="15sp"
+        android:padding="15dp"
+        app:iconTint="@null"
+        app:iconSize="35dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/info_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="?attr/materialIconButtonFilledTonalStyle"
+        app:iconTint="?attr/colorPrimary"
+        android:layout_marginStart="8dp"
+        app:icon="@drawable/ic_info"
+        app:iconSize="30dp" />
+</androidx.appcompat.widget.LinearLayoutCompat>

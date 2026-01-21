@@ -1,0 +1,32 @@
+<androidx.appcompat.widget.LinearLayoutCompat
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" >
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        app:strokeColor="?attr/colorPrimary"
+        app:cardCornerRadius="45dp"
+        android:layout_margin="5dp" >
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_search"
+            android:inputType="textAutoComplete"
+            android:imeOptions="actionDone"
+            android:layout_gravity="center"
+            android:hint="@string/search"
+            android:cursorVisible="true"
+            android:background="@null"
+            android:gravity="center"
+            android:padding="10dp"
+            android:maxLines="1" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <include layout="@layout/layout_recyclerview" />
+</androidx.appcompat.widget.LinearLayoutCompat>
