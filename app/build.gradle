@@ -29,6 +29,6 @@ android {
 
 dependencies {
     implementation (project(':library'))
-    implementation 'com.android.tools.build:apksig:8.13.2'
-    implementation 'com.google.android.material:material:1.13.0'
+    implementation libs.apksig
+    implementation libs.material
 }

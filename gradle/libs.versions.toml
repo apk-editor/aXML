@@ -1,0 +1,11 @@
+[versions]
+agpVersion = "9.0.0"
+annotationVersion = "1.9.1"
+apksigVersion = "9.0.0"
+materialVersion = "1.13.0"
+
+[libraries]
+annotation = { module = "androidx.annotation:annotation", version.ref = "annotationVersion" }
+apksig = { module = "com.android.tools.build:apksig", version.ref = "apksigVersion" }
+gradle = { module = "com.android.tools.build:gradle", version.ref = "agpVersion" }
+material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
