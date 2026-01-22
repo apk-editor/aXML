@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Objects;
 
 /*
- * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
+ * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2026
  */
 public class XMLEditorAdapter extends RecyclerView.Adapter<XMLEditorAdapter.ViewHolder> {
 

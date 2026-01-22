@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /*
- * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
+ * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2026
  */
 public abstract class Async {
 

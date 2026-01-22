@@ -38,7 +38,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 /*
- * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
+ * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2026
  */
 public class MainActivity extends AppCompatActivity {
 

@@ -1,6 +1,7 @@
 package com.apk.axmleditor.Utils;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
@@ -16,10 +17,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /*
- * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
+ * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2026
  */
 public class Utils {
 

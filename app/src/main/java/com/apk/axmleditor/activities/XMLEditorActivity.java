@@ -43,7 +43,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /*
- * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
+ * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2026
  */
 public class XMLEditorActivity extends BaseActivity {
 

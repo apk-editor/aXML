@@ -13,7 +13,7 @@ import com.apk.axmleditor.R;
 import com.google.android.material.textview.MaterialTextView;
 
 /*
- * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
+ * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2026
  */
 public class CertificateFragment extends Fragment {
 

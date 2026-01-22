@@ -17,7 +17,7 @@ import com.google.android.material.textview.MaterialTextView;
 import java.util.List;
 
 /*
- * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
+ * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2026
  */
 public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.ViewHolder> {
 
