@@ -11,7 +11,6 @@ import android.view.View;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,6 +20,7 @@ import com.apk.axml.APKParser;
 import com.apk.axml.aXMLDecoder;
 import com.apk.axml.serializableItems.ResEntry;
 import com.apk.axml.serializableItems.XMLEntry;
+import com.apk.axmleditor.BaseActivity;
 import com.apk.axmleditor.R;
 import com.apk.axmleditor.Utils.Async;
 import com.apk.axmleditor.Utils.Utils;
@@ -45,7 +45,7 @@ import java.util.zip.ZipInputStream;
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
  */
-public class XMLEditorActivity extends AppCompatActivity {
+public class XMLEditorActivity extends BaseActivity {
 
     private boolean mLocallyUpdated = false;
     private MaterialButton mRestoreButton, mSave;
@@ -58,7 +58,7 @@ public class XMLEditorActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_xmleditor);
+        setContentViewWithInsets(R.layout.activity_xmleditor, R.id.layout_root);
 
         AppCompatImageButton icon = findViewById(R.id.icon);
         MaterialAutoCompleteTextView mSearch = findViewById(R.id.search);

@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId "com.apk.axmleditor"
         minSdkVersion 23
-        targetSdk 34
+        targetSdk 36
         versionCode 1
         versionName "v0.1"
     }

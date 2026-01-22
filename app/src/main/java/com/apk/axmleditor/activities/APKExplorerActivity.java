@@ -10,13 +10,13 @@ import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.android.apksig.apk.ApkFormatException;
 import com.apk.axml.APKParser;
+import com.apk.axmleditor.BaseActivity;
 import com.apk.axmleditor.R;
 import com.apk.axmleditor.Utils.APKSigner;
 import com.apk.axmleditor.Utils.Async;
@@ -50,7 +50,7 @@ import java.util.zip.ZipOutputStream;
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
  */
-public class APKExplorerActivity extends AppCompatActivity {
+public class APKExplorerActivity extends BaseActivity {
 
     private AppCompatImageButton mBuild, mIcon;
     private MaterialTextView mDescription, mTitle;
@@ -63,7 +63,7 @@ public class APKExplorerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_apkexplorer);
+        setContentViewWithInsets(R.layout.activity_apkexplorer, R.id.layout_root);
 
         mIcon = findViewById(R.id.icon);
         mBuild = findViewById(R.id.build);

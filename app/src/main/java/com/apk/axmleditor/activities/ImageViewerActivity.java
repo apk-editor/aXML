@@ -17,13 +17,13 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.apk.axml.APKParser;
+import com.apk.axmleditor.BaseActivity;
 import com.apk.axmleditor.R;
 import com.apk.axmleditor.Utils.Async;
 import com.apk.axmleditor.Utils.Utils;
@@ -43,7 +43,7 @@ import java.util.zip.ZipInputStream;
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
  */
-public class ImageViewerActivity extends AppCompatActivity {
+public class ImageViewerActivity extends BaseActivity {
 
     private AppCompatImageView mImageView;
     private boolean mLocallyUpdated = false;
@@ -56,7 +56,7 @@ public class ImageViewerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_imageviewer);
+        setContentViewWithInsets(R.layout.activity_imageviewer, R.id.layout_root);
 
         AppCompatImageButton icon = findViewById(R.id.icon);
         mImageView = findViewById(R.id.image);

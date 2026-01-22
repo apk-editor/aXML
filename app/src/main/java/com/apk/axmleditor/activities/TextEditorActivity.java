@@ -11,11 +11,11 @@ import android.text.TextWatcher;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.content.ContextCompat;
 
 import com.apk.axml.APKParser;
+import com.apk.axmleditor.BaseActivity;
 import com.apk.axmleditor.R;
 import com.apk.axmleditor.Utils.Async;
 import com.apk.axmleditor.Utils.Utils;
@@ -35,7 +35,7 @@ import java.util.zip.ZipInputStream;
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
  */
-public class TextEditorActivity extends AppCompatActivity {
+public class TextEditorActivity extends BaseActivity {
 
     private boolean mLocallyUpdated = false;
     private MaterialButton mRestoreButton, mSave;
@@ -46,7 +46,7 @@ public class TextEditorActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_texteditor);
+        setContentViewWithInsets(R.layout.activity_texteditor, R.id.layout_root);
 
         AppCompatImageButton icon = findViewById(R.id.icon);
         mTextView = findViewById(R.id.text);

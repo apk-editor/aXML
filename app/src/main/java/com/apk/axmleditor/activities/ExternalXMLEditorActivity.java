@@ -11,7 +11,6 @@ import android.view.View;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.apk.axml.aXMLDecoder;
 import com.apk.axml.serializableItems.XMLEntry;
 
+import com.apk.axmleditor.BaseActivity;
 import com.apk.axmleditor.R;
 import com.apk.axmleditor.Utils.Async;
 import com.apk.axmleditor.dialogs.ProgressDialog;
@@ -38,7 +38,7 @@ import java.util.List;
 /*
  * Created by APK Explorer & Editor <apkeditor@protonmail.com> on January 05, 2025
  */
-public class ExternalXMLEditorActivity extends AppCompatActivity {
+public class ExternalXMLEditorActivity extends BaseActivity {
 
     private MaterialButton mSave;
     private RecyclerView mRecyclerView;
@@ -50,7 +50,7 @@ public class ExternalXMLEditorActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_xmleditor);
+        setContentViewWithInsets(R.layout.activity_xmleditor, R.id.layout_root);
 
         AppCompatImageButton icon = findViewById(R.id.icon);
         MaterialAutoCompleteTextView mSearch = findViewById(R.id.search);

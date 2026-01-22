@@ -3,14 +3,4 @@
         <item name="windowNoTitle">true</item>
         <item name="android:statusBarColor">@color/colorBlack</item>
     </style>
-
-    <style name="AppTheme.Amoled" parent="AppTheme">
-        <item name="android:colorBackground">@color/colorBlack</item>
-        <item name="android:windowBackground">@color/colorBlack</item>
-        <item name="android:statusBarColor">@color/colorBlack</item>
-        <item name="colorPrimaryDark">@color/colorBlack</item>
-        <item name="colorSurface">@color/colorBlack</item>
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
 </resources>
