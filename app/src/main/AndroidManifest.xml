@@ -3,11 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools" >
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"
         tools:node="remove" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE"
         tools:node="remove" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        tools:node="remove" />
+        android:maxSdkVersion="32"
+        tools:node="remove"
+        tools:ignore="ScopedStorage" />
 
     <application
         android:allowBackup="true"
@@ -29,6 +32,16 @@
         <activity android:name=".activities.APKExplorerActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="false" />
+
+        <activity android:name=".activities.APKPickerActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/vnd.android.package-archive" />
+            </intent-filter>
+        </activity>
 
         <activity android:name=".activities.ExternalXMLEditorActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
