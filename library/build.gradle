@@ -28,6 +28,8 @@ project.afterEvaluate {
         publications {
             release(MavenPublication) {
                 from components.findByName('release')
+                groupId = 'com.github.apk-editor'
+                artifactId = 'aXML'
             }
         }
     }
