@@ -1,7 +1,7 @@
 [versions]
-agpVersion = "9.0.0"
-annotationVersion = "1.9.1"
-apksigVersion = "9.0.0"
+agpVersion = "9.1.1"
+annotationVersion = "1.10.0"
+apksigVersion = "9.1.1"
 materialVersion = "1.13.0"
 
 [libraries]
