@@ -1,2 +1,4 @@
 jdk:
   - openjdk17
+install:
+  - ./gradlew publishToMavenLocal -x test -x lint -x lintVitalRelease -x :app:assembleRelease
