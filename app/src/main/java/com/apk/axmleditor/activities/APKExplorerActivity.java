@@ -86,9 +86,11 @@ public class APKExplorerActivity extends BaseActivity {
             mTitle.setText(name);
         }
 
-        mBuild.setAlpha(
-                isModified(new File(Utils.getExportPath(this), mPackageName)) ? 1f : 0.5f
-        );
+        try {
+            mBuild.setAlpha(
+                    isModified(new File(Utils.getExportPath(this), mPackageName)) ? 1f : 0.5f
+            );
+        } catch (NullPointerException ignored) {}
 
         mBuild.setOnClickListener(v -> {
             if (!isModified(new File(Utils.getExportPath(v.getContext()), mPackageName))) {
@@ -300,6 +302,9 @@ public class APKExplorerActivity extends BaseActivity {
                     new TabLayoutMediator(tabLayout, viewPager,
                             (tab, position) -> tab.setText(adapter.getPageTitle(position))
                     ).attach();
+                } else {
+                    Utils.toast(R.string.file_type_invalid_toast, activity).show();
+                    activity.finish();
                 }
             }
         };
@@ -321,9 +326,11 @@ public class APKExplorerActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mBuild.setAlpha(
-                isModified(new File(Utils.getExportPath(this), mPackageName)) ? 1f : 0.5f
-        );
+        try {
+            mBuild.setAlpha(
+                    isModified(new File(Utils.getExportPath(this), mPackageName)) ? 1f : 0.5f
+            );
+        } catch (NullPointerException ignored) {}
     }
 
 }

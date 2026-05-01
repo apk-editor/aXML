@@ -35,8 +35,9 @@ public class APKInfoAdapter extends RecyclerView.Adapter<APKInfoAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull APKInfoAdapter.ViewHolder holder, int position) {
-        holder.title.setText(data.get(position).getTitle());
-        holder.description.setText(data.get(position).getDescription());
+        APKInfoEntry apkInfoEntry = this.data.get(position);
+        holder.title.setText(apkInfoEntry.getTitle());
+        holder.description.setText(apkInfoEntry.getDescription());
         Utils.setSlideInAnimation(holder.itemView, position);
     }
 
@@ -58,8 +59,9 @@ public class APKInfoAdapter extends RecyclerView.Adapter<APKInfoAdapter.ViewHold
 
         @Override
         public void onClick(View view) {
-            boolean clickable = data.get(getBindingAdapterPosition()).isClickable();
-            String title = data.get(getBindingAdapterPosition()).getTitle();
+            APKInfoEntry apkInfoEntry = data.get(getBindingAdapterPosition());
+            boolean clickable = apkInfoEntry.isClickable();
+            String title = apkInfoEntry.getTitle();
             if (clickable) {
                 new DetailsDialog(title, view.getContext());
             }

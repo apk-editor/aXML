@@ -59,17 +59,18 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull FilesAdapter.ViewHolder holder, int position) {
-        holder.text.setText(data.get(position).getName());
-        if (data.get(position).getIcon() != null) {
-            if (new File(Utils.getExportPath(holder.icon.getContext()), packageName + "/" + data.get(position).getName()).exists()) {
-                holder.icon.setImageDrawable(Drawable.createFromPath(Utils.getExportPath(holder.icon.getContext()) + "/" + packageName + "/" + data.get(position).getName()));
+        FilesEntry filesEntry = this.data.get(position);
+        holder.text.setText(filesEntry.getName());
+        if (filesEntry.getIcon() != null) {
+            if (new File(Utils.getExportPath(holder.icon.getContext()), packageName + "/" + filesEntry.getName()).exists()) {
+                holder.icon.setImageDrawable(Drawable.createFromPath(Utils.getExportPath(holder.icon.getContext()) + "/" + packageName + "/" + filesEntry.getName()));
             } else {
-                holder.icon.setImageBitmap(data.get(position).getIcon());
+                holder.icon.setImageBitmap(filesEntry.getIcon());
             }
         } else {
-            if (data.get(position).getName().endsWith(".xml")) {
+            if (filesEntry.getName().endsWith(".xml")) {
                 holder.icon.setImageDrawable(ContextCompat.getDrawable(holder.icon.getContext(), R.drawable.ic_xml));
-            } else if (Utils.isTextFile(data.get(position).getName())) {
+            } else if (Utils.isTextFile(filesEntry.getName())) {
                 holder.icon.setImageDrawable(ContextCompat.getDrawable(holder.icon.getContext(), R.drawable.ic_txt));
             } else {
                 holder.icon.setImageDrawable(ContextCompat.getDrawable(holder.icon.getContext(), R.drawable.ic_file));
@@ -99,17 +100,18 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> 
         @Override
         public void onClick(View view) {
             int position = getBindingAdapterPosition();
+            FilesEntry filesEntry = data.get(position);
             if (position != RecyclerView.NO_POSITION) {
                 Intent intent = null;
-                if (Utils.isBinaryXML(data.get(position).getName().toLowerCase())) {
+                if (Utils.isBinaryXML(filesEntry.getName().toLowerCase())) {
                     intent = new Intent(view.getContext(), XMLEditorActivity.class);
-                    intent.putExtra(XMLEditorActivity.NAME_INTENT, data.get(position).getName());
-                } else if (Utils.isTextFile(data.get(position).getName().toLowerCase())) {
+                    intent.putExtra(XMLEditorActivity.NAME_INTENT, filesEntry.getName());
+                } else if (Utils.isTextFile(filesEntry.getName().toLowerCase())) {
                     intent = new Intent(view.getContext(), TextEditorActivity.class);
-                    intent.putExtra(TextEditorActivity.NAME_INTENT, data.get(position).getName());
-                } else if (Utils.isImageFile(data.get(position).getName().toLowerCase())) {
+                    intent.putExtra(TextEditorActivity.NAME_INTENT, filesEntry.getName());
+                } else if (Utils.isImageFile(filesEntry.getName().toLowerCase())) {
                     intent = new Intent(view.getContext(), ImageViewerActivity.class);
-                    intent.putExtra(ImageViewerActivity.NAME_INTENT, data.get(position).getName());
+                    intent.putExtra(ImageViewerActivity.NAME_INTENT, filesEntry.getName());
                     intent.putExtra(ImageViewerActivity.POSITION_INTENT, position);
                 }
                 if (intent != null) {
@@ -123,12 +125,13 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> 
         @Override
         public boolean onLongClick(View view) {
             int position = getBindingAdapterPosition();
+            FilesEntry filesEntry = data.get(position);
             if (position == RecyclerView.NO_POSITION) return false;
-            if (new File(Utils.getExportPath(view.getContext()), packageName + "/" + data.get(position).getName()).exists()) return true;
+            if (new File(Utils.getExportPath(view.getContext()), packageName + "/" + filesEntry.getName()).exists()) return true;
             new MaterialAlertDialogBuilder(view.getContext())
                     .setIcon(R.mipmap.ic_launcher)
                     .setTitle(R.string.file_save_question)
-                    .setMessage(" - " + data.get(position).getName().trim())
+                    .setMessage(" - " + filesEntry.getName().trim())
                     .setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
                     })
                     .setPositiveButton(R.string.save, (dialogInterface, i) -> new Async() {
@@ -143,7 +146,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> 
 
                                 @Override
                                 public void doInBackground() {
-                                    File outFile = new File(Utils.getExportPath(view.getContext()), packageName + "/" + data.get(position).getName());
+                                    File outFile = new File(Utils.getExportPath(view.getContext()), packageName + "/" + filesEntry.getName());
                                     Objects.requireNonNull(outFile.getParentFile()).mkdirs();
                                     try (ZipInputStream zis = new ZipInputStream(view.getContext().getContentResolver().openInputStream(fileUri))) {
                                         ZipEntry entry;

@@ -16,8 +16,8 @@
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
             android:src="@drawable/ic_android"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -36,7 +36,8 @@
             app:layout_constraintTop_toTopOf="@id/icon"
             android:gravity="center_vertical"
             android:orientation="vertical"
-            android:paddingStart="12dp" >
+            android:paddingStart="12dp"
+            android:paddingEnd="1dp" >
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/title"

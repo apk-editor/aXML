@@ -69,9 +69,10 @@ public class XMLEditorAdapter extends RecyclerView.Adapter<XMLEditorAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        if (searchWord == null || data.get(position).getText().contains(searchWord)) {
-            holder.mText.setAlpha(data.get(position).getValue().isEmpty() ? (float) 0.5 : 1);
-            holder.mText.setText(data.get(position).getText());
+        XMLEntry xmlEntry = this.data.get(position);
+        if (searchWord == null || xmlEntry.getText().contains(searchWord)) {
+            holder.mText.setAlpha(xmlEntry.getValue().isEmpty() ? (float) 0.5 : 1);
+            holder.mText.setText(xmlEntry.getText());
             holder.mText.setVisibility(VISIBLE);
         } else {
             holder.mText.setVisibility(GONE);
@@ -100,19 +101,20 @@ public class XMLEditorAdapter extends RecyclerView.Adapter<XMLEditorAdapter.View
         @Override
         public void onClick(View view) {
             int position = getBindingAdapterPosition();
+            XMLEntry xmlEntry = data.get(position);
             if (position == RecyclerView.NO_POSITION) return;
-            if (data.get(position).getValue().isEmpty()) return;
-            if (data.get(position).getValue().startsWith("res/")) {
+            if (xmlEntry.getValue().isEmpty()) return;
+            if (xmlEntry.getValue().startsWith("res/")) {
                 Intent intent = null;
-                if (Utils.isBinaryXML(data.get(position).getValue().toLowerCase())) {
+                if (Utils.isBinaryXML(xmlEntry.getValue().toLowerCase())) {
                     intent = new Intent(view.getContext(), XMLEditorActivity.class);
-                    intent.putExtra(XMLEditorActivity.NAME_INTENT, data.get(position).getValue());
-                } else if (Utils.isTextFile(data.get(position).getValue().toLowerCase())) {
+                    intent.putExtra(XMLEditorActivity.NAME_INTENT, xmlEntry.getValue());
+                } else if (Utils.isTextFile(xmlEntry.getValue().toLowerCase())) {
                     intent = new Intent(view.getContext(), TextEditorActivity.class);
-                    intent.putExtra(TextEditorActivity.NAME_INTENT, data.get(position).getValue());
-                } else if (Utils.isImageFile(data.get(position).getValue())) {
+                    intent.putExtra(TextEditorActivity.NAME_INTENT, xmlEntry.getValue());
+                } else if (Utils.isImageFile(xmlEntry.getValue())) {
                     intent = new Intent(view.getContext(), ImageViewerActivity.class);
-                    intent.putExtra(ImageViewerActivity.NAME_INTENT, data.get(position).getValue());
+                    intent.putExtra(ImageViewerActivity.NAME_INTENT, xmlEntry.getValue());
                     intent.putExtra(ImageViewerActivity.POSITION_INTENT, RecyclerView.NO_POSITION);
                 }
                 Objects.requireNonNull(intent).setData(fileUri);
@@ -126,12 +128,13 @@ public class XMLEditorAdapter extends RecyclerView.Adapter<XMLEditorAdapter.View
         @Override
         public boolean onLongClick(View view) {
             int position = getBindingAdapterPosition();
+            XMLEntry xmlEntry = data.get(position);
             if (position == RecyclerView.NO_POSITION) return false;
-            if (data.get(position).getValue().isEmpty()) return true;
+            if (xmlEntry.getValue().isEmpty()) return true;
             new MaterialAlertDialogBuilder(view.getContext())
                     .setIcon(R.mipmap.ic_launcher)
                     .setTitle(R.string.remove_line_question)
-                    .setMessage(data.get(position).getText().trim())
+                    .setMessage(xmlEntry.getText().trim())
                     .setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
                     })
                     .setPositiveButton(R.string.remove_line, (dialogInterface, i) ->
@@ -142,7 +145,7 @@ public class XMLEditorAdapter extends RecyclerView.Adapter<XMLEditorAdapter.View
     }
 
     private void launchEditorDialog(int position, Context context) {
-        new XMLEditorDialog(data.get(position), context) {
+        new XMLEditorDialog(this.data.get(position), context) {
 
             @Override
             public void modifyLine(String newValue) {

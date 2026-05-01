@@ -8,8 +8,8 @@
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/icon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_gravity="start|center"
             android:src="@drawable/ic_shield"
             android:scaleType="fitCenter"

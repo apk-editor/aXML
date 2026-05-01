@@ -36,10 +36,11 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull DetailsAdapter.ViewHolder holder, int position) {
-        holder.title.setText(data.get(position).getTitle());
-        holder.description.setText(data.get(position).getDescription());
-        if (data.get(position).getIcon() != null) {
-            holder.icon.setImageDrawable(data.get(position).getIcon());
+        APKInfoEntry apkInfoEntry = this.data.get(position);
+        holder.title.setText(apkInfoEntry.getTitle());
+        holder.description.setText(apkInfoEntry.getDescription());
+        if (apkInfoEntry.getIcon() != null) {
+            holder.icon.setImageDrawable(apkInfoEntry.getIcon());
         } else {
             holder.icon.setImageDrawable(ContextCompat.getDrawable(holder.icon.getContext(), R.drawable.ic_shield));
         }

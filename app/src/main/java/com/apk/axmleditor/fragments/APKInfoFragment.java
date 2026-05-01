@@ -56,6 +56,8 @@ public class APKInfoFragment extends Fragment {
 
             public String sdkToAndroidVersion(int sdkVersion) {
                 switch (sdkVersion) {
+                    case 37:
+                        return "17 (CINNAMON_BUN, " + sdkVersion + ")";
                     case 36:
                         return "16 (BAKLAVA, " + sdkVersion + ")";
                     case 35:

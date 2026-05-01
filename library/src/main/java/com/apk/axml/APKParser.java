@@ -414,6 +414,7 @@ public class APKParser {
 
         PackageManager pm = getPackageManager(context);
         ApplicationInfo ai = Objects.requireNonNull(packageInfo).applicationInfo;
+        if (ai == null) return;
         ai.sourceDir = apkPath;
         ai.publicSourceDir = apkPath;
         mAppName = pm.getApplicationLabel(Objects.requireNonNull(ai)).toString();
@@ -500,7 +501,7 @@ public class APKParser {
             } else {
                 try (ParcelFileDescriptor fd = context.getContentResolver().openFileDescriptor(apkUri, "r")) {
                     parse("/proc/self/fd/" + Objects.requireNonNull(fd).getFd(), context);
-                } catch (IOException ignored) {
+                } catch (Exception ignored) {
                 }
             }
         }
