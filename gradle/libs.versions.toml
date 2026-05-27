@@ -1,8 +1,8 @@
 [versions]
-agpVersion = "9.2.0"
+agpVersion = "9.2.1"
 annotationVersion = "1.10.0"
-apksigVersion = "9.2.0"
-materialVersion = "1.13.0"
+apksigVersion = "9.2.1"
+materialVersion = "1.14.0"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotationVersion" }
