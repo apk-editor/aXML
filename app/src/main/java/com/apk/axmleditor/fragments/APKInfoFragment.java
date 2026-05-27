@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.apk.axml.APKParser;
 import com.apk.axmleditor.R;
-import com.apk.axmleditor.Utils.Async;
+import com.apk.axmleditor.utils.Async;
 import com.apk.axmleditor.adapters.APKInfoAdapter;
 import com.apk.axmleditor.serializable.APKInfoEntry;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;

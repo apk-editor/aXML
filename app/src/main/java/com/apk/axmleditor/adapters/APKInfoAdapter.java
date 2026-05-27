@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.apk.axmleditor.R;
-import com.apk.axmleditor.Utils.Utils;
+import com.apk.axmleditor.utils.Utils;
 import com.apk.axmleditor.dialogs.DetailsDialog;
 import com.apk.axmleditor.serializable.APKInfoEntry;
 import com.google.android.material.textview.MaterialTextView;

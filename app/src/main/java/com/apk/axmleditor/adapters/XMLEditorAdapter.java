@@ -18,13 +18,13 @@ import com.apk.axml.serializableItems.ResEntry;
 import com.apk.axml.serializableItems.XMLEntry;
 
 import com.apk.axmleditor.R;
-import com.apk.axmleditor.Utils.Async;
+import com.apk.axmleditor.utils.Async;
 import com.apk.axmleditor.activities.ImageViewerActivity;
 import com.apk.axmleditor.activities.TextEditorActivity;
 import com.apk.axmleditor.activities.XMLEditorActivity;
 import com.apk.axmleditor.dialogs.ProgressDialog;
-import com.apk.axmleditor.Utils.Utils;
-import com.apk.axmleditor.Utils.XMLEditor;
+import com.apk.axmleditor.utils.Utils;
+import com.apk.axmleditor.utils.XMLEditor;
 import com.apk.axmleditor.dialogs.XMLEditorDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;

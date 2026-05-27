@@ -22,8 +22,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.apk.axml.APKParser;
 import com.apk.axmleditor.R;
-import com.apk.axmleditor.Utils.Async;
-import com.apk.axmleditor.Utils.FilesViewModel;
+import com.apk.axmleditor.utils.Async;
+import com.apk.axmleditor.utils.FilesViewModel;
 import com.apk.axmleditor.adapters.FilesAdapter;
 import com.apk.axmleditor.dialogs.ProgressDialog;
 import com.apk.axmleditor.serializable.FilesEntry;

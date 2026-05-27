@@ -17,7 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.apk.axml.APKParser;
 import com.apk.axmleditor.R;
-import com.apk.axmleditor.Utils.Async;
+import com.apk.axmleditor.utils.Async;
 import com.apk.axmleditor.dialogs.ProgressDialog;
 
 import java.io.File;

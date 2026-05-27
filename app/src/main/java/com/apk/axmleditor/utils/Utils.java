@@ -1,7 +1,6 @@
-package com.apk.axmleditor.Utils;
+package com.apk.axmleditor.utils;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Environment;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
@@ -17,7 +16,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /*

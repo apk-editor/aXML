@@ -14,8 +14,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.apk.axmleditor.R;
-import com.apk.axmleditor.Utils.Async;
-import com.apk.axmleditor.Utils.Utils;
+import com.apk.axmleditor.utils.Async;
+import com.apk.axmleditor.utils.Utils;
 import com.apk.axmleditor.activities.ImageViewerActivity;
 import com.apk.axmleditor.activities.TextEditorActivity;
 import com.apk.axmleditor.activities.XMLEditorActivity;

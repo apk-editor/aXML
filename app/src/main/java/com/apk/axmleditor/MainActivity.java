@@ -22,11 +22,11 @@ import androidx.appcompat.app.AppCompatDelegate;
 
 import com.apk.axml.APKParser;
 import com.apk.axml.aXMLDecoder;
-import com.apk.axmleditor.Utils.Async;
+import com.apk.axmleditor.utils.Async;
 import com.apk.axmleditor.activities.APKExplorerActivity;
 import com.apk.axmleditor.dialogs.AboutDialog;
 import com.apk.axmleditor.dialogs.ProgressDialog;
-import com.apk.axmleditor.Utils.Utils;
+import com.apk.axmleditor.utils.Utils;
 import com.apk.axmleditor.activities.ExternalXMLEditorActivity;
 import com.google.android.material.button.MaterialButton;
 

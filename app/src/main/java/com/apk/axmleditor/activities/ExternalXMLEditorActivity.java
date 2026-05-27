@@ -20,7 +20,7 @@ import com.apk.axml.serializableItems.XMLEntry;
 
 import com.apk.axmleditor.BaseActivity;
 import com.apk.axmleditor.R;
-import com.apk.axmleditor.Utils.Async;
+import com.apk.axmleditor.utils.Async;
 import com.apk.axmleditor.dialogs.ProgressDialog;
 import com.apk.axmleditor.adapters.XMLEditorAdapter;
 import com.google.android.material.button.MaterialButton;

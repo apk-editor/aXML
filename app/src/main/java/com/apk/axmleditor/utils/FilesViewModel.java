@@ -1,4 +1,4 @@
-package com.apk.axmleditor.Utils;
+package com.apk.axmleditor.utils;
 
 import androidx.lifecycle.ViewModel;
 
