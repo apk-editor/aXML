@@ -1,13 +1,12 @@
 package com.apk.axmleditor.utils;
 
-import android.content.Context;
 import android.os.Build;
+import android.util.Base64;
 
 import com.android.apksig.ApkSigner;
 import com.android.apksig.apk.ApkFormatException;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,12 +33,12 @@ public class APKSigner {
     public APKSigner() {
     }
 
-    public void sign(File apkFile, File apkFileSigned, Context context) throws ApkFormatException, IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    public void sign(File apkFile, File apkFileSigned) throws ApkFormatException, IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, InvalidKeySpecException {
         @SuppressWarnings("deprecation")
         ApkSigner.SignerConfig signerConfig =
                 new ApkSigner.SignerConfig.Builder(
                         "CERT",
-                        getPrivateKey(context),
+                        getPrivateKey(),
                         Collections.singletonList(getCertificate())
                 ).build();
         ApkSigner.Builder builder = new ApkSigner.Builder(Collections.singletonList(signerConfig));
@@ -61,25 +60,40 @@ public class APKSigner {
         signer.sign();
     }
 
-    private static PrivateKey getPrivateKey(Context context) {
-        try {
-            byte[] keyBytes;
-            try (InputStream inputStream = context.getAssets().open("APKEditor.pk8");
-                 ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-                byte[] temp = new byte[4096];
-                int read;
-                while ((read = inputStream.read(temp)) != -1) {
-                    buffer.write(temp, 0, read);
-                }
-                keyBytes = buffer.toByteArray();
-            }
-
-            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            return kf.generatePrivate(spec);
-        } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException ignored) {
-            return null;
-        }
+    private static PrivateKey getPrivateKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        String keyString =
+                "MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDWCykoh8vbwIhD9s" +
+                        "i8zOflqa+BvfX1Z5ito0mAuX0PhnDaI5lSDz1EHkk7sml0I+P0LnQxfIRs" +
+                        "RFP6cktzfy+C0Kr/NrFsn8D5CjwXnFEGU5T6i3s0f3wuPY07Cl22jqIi+0" +
+                        "QS6iZ7dUP6mLHMHHVH9TNnm3Tw1Jb2R/9oORlubwV6yzEkBeLMJLZymPpu" +
+                        "iB8TX0dvT1+47hHHRLSSQqGu4lfJ7YI8zwLnXuyRw9V94l16Pu2BokE9KU" +
+                        "tv4mrPiyY/C+/870KdVn7B7Yo0qEsW+rzd/ePMvWF9MJynxSqWlg20Dt0D" +
+                        "OuOSBgMM+sXCZ5SYGVMqkLl2WLZZRXUedqPVAgMBAAECggEBAL1+O/3p2w" +
+                        "y9suWYgbbEITkttHdEWY/dG0n+GYCgtpscBqTYh1AitbasqWD0Xm+3poPy" +
+                        "7GMzPXksNLywmyOxIbrKSdiP7xufgxP3f6PXe9QCAw6clYKwqpu1Wmc+ki" +
+                        "CgveICWQ31xgPemUQuEpoFR79g0RWUhz7+tndq3i7C/kTI3ahbm1bq0gU2" +
+                        "xKr6J31DGfJu2YViXhDxl0/7/w95LxSILWnRNFJo70Sxo4igA6TOTQBo06" +
+                        "9yyB9J0uwkW+P1OY5CPs2yywtRrphhdtXirstXXyn/thU3OItz8tYEtWHu" +
+                        "gr5v1y0D3yEODrc3P1bWOPu5dn2Io4Fx90TmkazT3IECgYEA+0m2nY4md4" +
+                        "ydmzVvzyAU/QURvRS9yBLpkIurTbt2shPPByuwl8iosfthyLBNrhCfwdSD" +
+                        "ZEh9YbTgaG4Rx9a0QSA5RQLcpF4SVN1fD5dQ2gp3Ig9R58HXWLIX0ERcYk" +
+                        "2VqRTrVQELJXz/M65T+tKdjQlYpE210R2JH9Dqhx0AGb0CgYEA2g6ouWn4" +
+                        "TM2nAfUs5l8m6P1WrtDV8yBzaRl8kTwH3GnkBkDzc24SpcoCpUqd5giHPM" +
+                        "ECjjd5YP82nDU63ccC2imgAqPeF1iJW3XBXV95jeVt8DAC8PRxdFFDVxn5" +
+                        "NR2Myd7JoyqtfdpfmoXS53dPQ2WnoRVM/JlP0riVAGGON/kCgYEA6JxxuS" +
+                        "MvJJc8BcLPf1JZW2Zn5znd++jV4IIJzujrlSiVCjQ9QiPzVN44xEe/gJPO" +
+                        "7uRDxH794YZH/SN2viBXt7mWifV+PYD/QyOwrYQKyevKH/NChGCBcY9aT+" +
+                        "YYBr9+/Idq2MMgiFFPA44qGxL/2OB/94gf+DV5C8SedPg5cZkCgYAFXej/" +
+                        "L0GCOmmK3cruHJdrkpioktFBO6I7ivoK5QxYe262TLDxPVtOI0uvX8fFGp" +
+                        "6heyqh73GYVo+0hobdYIGMdwvOJNRZhL9UtfA9aRUnzebHy5a28X09XKao" +
+                        "pSYCDakias5RqsI8X7yMpBCNy9zyjrTyfQC5EtjpGcvpB32lmQKBgQDLjm" +
+                        "n3zEOVvUl3+taJj4+yXvwJNRuiT5PlfLcs3QpziDIzqHpYJCv1YQmK3VMY" +
+                        "YN/jbVyIJa4ICK/YaKorI/+VYW4QotPJH4ALjaRfVLOCRjo/R4vQ+qr2fT" +
+                        "I2OXWErZmZVwJeCuwMn0gkV30jZnUXBwhe/1/cSeqMxvYk3TATUQ==";
+        byte[] keyBytes = Base64.decode(keyString, Base64.DEFAULT);
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return kf.generatePrivate(spec);
     }
 
     private static X509Certificate encodeCertificate(InputStream inputStream) {
@@ -94,22 +108,26 @@ public class APKSigner {
 
     private static X509Certificate getCertificate() {
         String certificateString = CERT_START_STRING + "\n" +
-                    "MIICyTCCAbGgAwIBAgIEfNgbbDANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwpB\n" +
-                    "UEsgRWRpdG9yMB4XDTIxMDIyNzEyNDM0NFoXDTQ2MDIyMTEyNDM0NFowFTETMBEG\n" +
-                    "A1UEAxMKQVBLIEVkaXRvcjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\n" +
-                    "ALzPirwEi4iJdk2YG6UT0LY9mp01En7MvIfomupQ+++3eKT6HEIBzcrVrWTUbmu9\n" +
-                    "fLii3CWkGmw0jx6Sdjvv2LpZKk8Vw2pB0rI5ewXNjXcjwpEtQQDPu0YaG8wcRgiA\n" +
-                    "lwVm5L1qxxiS/Gpp7jsJDQsjlxt+U329X5E4ODbg6GDNEe/zss9W2+AQID7FbPVN\n" +
-                    "UWM3NzMIMzl8i7XVIQujzYiL7B3FE4oXMaqhQcEG7yo4LH30cEL5k98uFpKc0nWA\n" +
-                    "b0rMB4nNZn9dexNT6CUcnEXHVd1bDDUe3l6UZrl+2PO/gcZFMbK+2LJASkt92jGf\n" +
-                    "cH7YSBYLoB6PAem650tm2ZECAwEAAaMhMB8wHQYDVR0OBBYEFK4U40Qda8jX9A2f\n" +
-                    "iuBn6vV2QevRMA0GCSqGSIb3DQEBCwUAA4IBAQBjnGi5A0PjA2gpcdHTNZYEBHG2\n" +
-                    "e+9IVCq+LaZbmo5flby1XjGQ/FipzMjmtKFmYHtXgCVt2edgI5Urhj7nLFYa8Yjy\n" +
-                    "zrN0sWjJagCJM/CjyRo8B0A+xNEq7pmiFQfsP2DFGvAkz89gavPtlaDKQHUkedLK\n" +
-                    "QGI9YAK6mgStb6Olw4DGhCUE3IH7TBH08HvubizzgtHyxs9pGt6/QumWYnJnfEGd\n" +
-                    "0Sk2k337vc0OH+rZPYChcqis48OZ+IrQodP2N749M6yOEXHcV2NixmciJ1vrWdu3\n" +
-                    "aJDI5t2p3qX1HYneBQ8yc9rvWIf4xFjT5AXzHt8cszdSNBrrJrewrvmJr1kZ" + "\n"
-                    + CERT_END_STRING;
+                "MIIDgzCCAmugAwIBAgIEYNn5AjANBgkqhkiG9w0BAQsFADBxMQswCQYDVQQGEwJE\n" +
+                "RTEPMA0GA1UECBMGQmVybGluMQ8wDQYDVQQHEwZCZXJsaW4xDDAKBgNVBAoTA0FF\n" +
+                "RTEMMAoGA1UECxMDQUVFMSQwIgYDVQQDDBtBUEsgRXhwbG9yZXIgJiBFZGl0b3Ig\n" +
+                "KEFFRSkwIBcNMjYwNTI3MjAzMjA0WhgPMjA1MzEwMTIyMDMyMDRaMHExCzAJBgNV\n" +
+                "BAYTAkRFMQ8wDQYDVQQIEwZCZXJsaW4xDzANBgNVBAcTBkJlcmxpbjEMMAoGA1UE\n" +
+                "ChMDQUVFMQwwCgYDVQQLEwNBRUUxJDAiBgNVBAMMG0FQSyBFeHBsb3JlciAmIEVk\n" +
+                "aXRvciAoQUVFKTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANYLKSiH\n" +
+                "y9vAiEP2yLzM5+Wpr4G99fVnmK2jSYC5fQ+GcNojmVIPPUQeSTuyaXQj4/QudDF8\n" +
+                "hGxEU/pyS3N/L4LQqv82sWyfwPkKPBecUQZTlPqLezR/fC49jTsKXbaOoiL7RBLq\n" +
+                "Jnt1Q/qYscwcdUf1M2ebdPDUlvZH/2g5GW5vBXrLMSQF4swktnKY+m6IHxNfR29P\n" +
+                "X7juEcdEtJJCoa7iV8ntgjzPAude7JHD1X3iXXo+7YGiQT0pS2/ias+LJj8L7/zv\n" +
+                "Qp1WfsHtijSoSxb6vN3948y9YX0wnKfFKpaWDbQO3QM645IGAwz6xcJnlJgZUyqQ\n" +
+                "uXZYtllFdR52o9UCAwEAAaMhMB8wHQYDVR0OBBYEFMcPPQrCFCOYdUoCTtDP3ldQ\n" +
+                "oi/MMA0GCSqGSIb3DQEBCwUAA4IBAQCgZOouK/fCd96NuseFVMexC3Cn1RWS3oPc\n" +
+                "ABKg62nCbUs3t+Nq+80Kmoqw33WF+eIDzVI3wm4FuhadzDoyC5trfX9OMEIHtNs/\n" +
+                "cydZQ2EN3+ePtSvN3Rfh64zS6Wp+bQP9btVxKcKug+POXeiJ65LSVGjL1XAXRf7j\n" +
+                "Op5kd63Ex6HEY7+jhHlCLzenX6qpOsU4dtyxprDWPh1mP/9+DPRp1Vq9ocX5AoZl\n" +
+                "/+Aerzn9cqsGk0XZ/zNNcWp+tQJKlaJRlsyCROUNcl+rYn05OZ4HW7up/s6GdGPY\n" +
+                "fLaiSO5dcKIZkzoAJ7NrySt9JqfPHqz2hisDHZCQHMB7IQyaEIRt" + "\n"
+                + CERT_END_STRING;
         return encodeCertificate(new ByteArrayInputStream(certificateString.getBytes()));
     }
 

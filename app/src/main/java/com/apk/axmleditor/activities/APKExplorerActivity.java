@@ -41,6 +41,7 @@ import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
@@ -187,9 +188,10 @@ public class APKExplorerActivity extends BaseActivity {
                     if (unSignedAPK.exists()) {
                         try {
                             new APKSigner().sign(unSignedAPK, new File(Utils.getExportPath(activity),
-                                    mPackageName + "-aXMLEditor.apk"), activity);
+                                    mPackageName + "-aXMLEditor.apk"));
                         } catch (ApkFormatException | InvalidKeyException | IOException |
-                                 NoSuchAlgorithmException | SignatureException ignored) {
+                                 NoSuchAlgorithmException | SignatureException |
+                                 InvalidKeySpecException ignored) {
                         }
 
                         unSignedAPK.delete();
