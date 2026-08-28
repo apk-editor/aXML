@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.apk.axml.aXMLDecoder;
-import com.apk.axml.serializableItems.XMLEntry;
+import com.apk.axml.serializables.XMLEntry;
 
 import com.apk.axmleditor.BaseActivity;
 import com.apk.axmleditor.R;

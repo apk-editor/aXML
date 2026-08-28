@@ -8,7 +8,7 @@ import com.apk.axml.aXMLUtils.StringPoolChunk;
 import com.apk.axml.aXMLUtils.TagChunk;
 import com.apk.axml.aXMLUtils.Utils;
 import com.apk.axml.aXMLUtils.XmlChunk;
-import com.apk.axml.serializableItems.XMLEntry;
+import com.apk.axml.serializables.XMLEntry;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;

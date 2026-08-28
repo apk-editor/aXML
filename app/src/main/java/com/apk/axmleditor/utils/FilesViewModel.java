@@ -2,7 +2,7 @@ package com.apk.axmleditor.utils;
 
 import androidx.lifecycle.ViewModel;
 
-import com.apk.axmleditor.serializable.FilesEntry;
+import com.apk.axmleditor.serializables.FilesEntry;
 
 import java.util.HashMap;
 import java.util.List;

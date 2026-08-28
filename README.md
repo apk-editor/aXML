@@ -45,7 +45,7 @@ dependencies {
 
 The `aXMLDecoder` provides functionality to **decode Android binary XML (aXML)** into:
 
-- A list of serializable [`XMLEntry`](library/src/main/java/com/apk/axml/serializableItems/XMLEntry.java) objects, or
+- A list of serializable [`XMLEntry`](library/src/main/java/com/apk/axml/serializables/XMLEntry.java) objects, or
 - A **human-readable XML string**
 
 #### Decode into serializable entries
@@ -61,7 +61,7 @@ try {
 
 **Parameters:**
 - `xmlStream` — InputStream of the binary aXML file
-- `resourceEntries` — List of [`ResEntry`](library/src/main/java/com/apk/axml/serializableItems/ResEntry.java) parsed from `resources.arsc`
+- `resourceEntries` — List of [`ResEntry`](library/src/main/java/com/apk/axml/serializables/ResEntry.java) parsed from `resources.arsc`
 
 #### Decode into readable string
 ```java
@@ -114,7 +114,7 @@ try (FileOutputStream fos = new FileOutputStream(pathToaXMLFile)) {
 
 ### 📖 ResourceTableParser
 
-The `ResourceTableParser` parses Android resource tables (`resources.arsc`) into serializable [`ResEntry`](library/src/main/java/com/apk/axml/serializableItems/ResEntry.java) objects.
+The `ResourceTableParser` parses Android resource tables (`resources.arsc`) into serializable [`ResEntry`](library/src/main/java/com/apk/axml/serializables/ResEntry.java) objects.
 
 ```java
 List<ResEntry> resourceEntries;

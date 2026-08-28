@@ -1,4 +1,4 @@
-package com.apk.axmleditor.serializable;
+package com.apk.axmleditor.serializables;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

@@ -1,6 +1,6 @@
 package com.apk.axml.aXMLUtils;
 
-import com.apk.axml.serializableItems.XMLEntry;
+import com.apk.axml.serializables.XMLEntry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

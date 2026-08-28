@@ -20,7 +20,7 @@ import com.apk.axmleditor.activities.ImageViewerActivity;
 import com.apk.axmleditor.activities.TextEditorActivity;
 import com.apk.axmleditor.activities.XMLEditorActivity;
 import com.apk.axmleditor.dialogs.ProgressDialog;
-import com.apk.axmleditor.serializable.FilesEntry;
+import com.apk.axmleditor.serializables.FilesEntry;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textview.MaterialTextView;
 

@@ -4,7 +4,7 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-import com.apk.axml.serializableItems.ResEntry;
+import com.apk.axml.serializables.ResEntry;
 import com.apk.axml.aXMLUtils.Utils;
 
 import java.io.IOException;

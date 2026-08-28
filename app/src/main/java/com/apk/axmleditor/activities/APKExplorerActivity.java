@@ -26,7 +26,7 @@ import com.apk.axmleditor.adapters.PagerAdapter;
 import com.apk.axmleditor.dialogs.ProgressDialog;
 import com.apk.axmleditor.fragments.APKInfoFragment;
 import com.apk.axmleditor.fragments.FilesFragment;
-import com.apk.axmleditor.serializable.FilesEntry;
+import com.apk.axmleditor.serializables.FilesEntry;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;

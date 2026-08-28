@@ -1,4 +1,4 @@
-package com.apk.axml.serializableItems;
+package com.apk.axml.serializables;
 
 import java.io.Serializable;
 

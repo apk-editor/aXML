@@ -8,7 +8,7 @@ import android.view.View;
 
 import androidx.appcompat.app.AlertDialog;
 
-import com.apk.axml.serializableItems.XMLEntry;
+import com.apk.axml.serializables.XMLEntry;
 import com.apk.axmleditor.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;

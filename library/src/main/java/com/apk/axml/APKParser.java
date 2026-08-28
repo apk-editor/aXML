@@ -19,8 +19,8 @@ import android.util.Base64;
 import androidx.annotation.RequiresApi;
 
 import com.apk.axml.aXMLUtils.Utils;
-import com.apk.axml.serializableItems.ResEntry;
-import com.apk.axml.serializableItems.XMLEntry;
+import com.apk.axml.serializables.ResEntry;
+import com.apk.axml.serializables.XMLEntry;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
