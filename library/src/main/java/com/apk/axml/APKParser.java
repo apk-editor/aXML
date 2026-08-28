@@ -387,7 +387,8 @@ public class APKParser {
     public void parse(String apkPath, Context context) {
         clean();
 
-        PackageInfo packageInfo = getPackageManager(context).getPackageArchiveInfo(apkPath, PackageManager.GET_META_DATA);
+        PackageManager pm = getPackageManager(context);
+        PackageInfo packageInfo = pm.getPackageArchiveInfo(apkPath, PackageManager.GET_META_DATA);
 
         mApkPath = apkPath;
         mCertificate = getCertificateDetails(apkPath, context);
@@ -412,13 +413,12 @@ public class APKParser {
             }
         } catch (Exception ignored) {}
 
-        PackageManager pm = getPackageManager(context);
         ApplicationInfo ai = Objects.requireNonNull(packageInfo).applicationInfo;
         if (ai == null) return;
         ai.sourceDir = apkPath;
         ai.publicSourceDir = apkPath;
-        mAppName = pm.getApplicationLabel(Objects.requireNonNull(ai)).toString();
-        mAppIcon = pm.getApplicationIcon(Objects.requireNonNull(ai));
+        mAppName = pm.getApplicationLabel(ai).toString();
+        mAppIcon = pm.getApplicationIcon(ai);
         mActivities = getActivities(apkPath, context);
         mProviders = getProviders(apkPath, context);
         mReceivers = getReceivers(apkPath, context);
