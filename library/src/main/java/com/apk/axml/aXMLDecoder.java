@@ -82,7 +82,7 @@ public class aXMLDecoder {
 					String prefix = parser.getAttributePrefix(i);
 					String name = parser.getAttributeName(i);
 					String fullName = (prefix != null && !prefix.isEmpty()) ? prefix + ":" + name : name;
-					String value = getAttributeValue(parser, resourceEntries, i);
+					String value = escapeAttribute(getAttributeValue(parser, resourceEntries, i));
 					result.add(new XMLEntry(indent + "    " + fullName,"=\"",value,"\""));
 				}
 
@@ -221,7 +221,17 @@ public class aXMLDecoder {
 	}
 
 	private static String escapeText(String s) {
-		return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;");
+		return s.replace("&","&amp;")
+				.replace("<","&lt;")
+				.replace(">","&gt;");
+	}
+
+	private static String escapeAttribute(String s) {
+		return s.replace("&", "&amp;")
+				.replace("<", "&lt;")
+				.replace(">", "&gt;")
+				.replace("\"", "&quot;")
+				.replace("'", "&apos;");
 	}
 
 	private static String trimTrailingZero(float f) {
