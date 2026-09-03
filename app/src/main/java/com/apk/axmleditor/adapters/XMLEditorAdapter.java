@@ -16,16 +16,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.apk.axml.serializables.ResEntry;
 import com.apk.axml.serializables.XMLEntry;
-
 import com.apk.axmleditor.R;
-import com.apk.axmleditor.utils.Async;
 import com.apk.axmleditor.activities.ImageViewerActivity;
 import com.apk.axmleditor.activities.TextEditorActivity;
 import com.apk.axmleditor.activities.XMLEditorActivity;
 import com.apk.axmleditor.dialogs.ProgressDialog;
+import com.apk.axmleditor.dialogs.XMLEditorDialog;
+import com.apk.axmleditor.utils.Async;
 import com.apk.axmleditor.utils.Utils;
 import com.apk.axmleditor.utils.XMLEditor;
-import com.apk.axmleditor.dialogs.XMLEditorDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textview.MaterialTextView;
