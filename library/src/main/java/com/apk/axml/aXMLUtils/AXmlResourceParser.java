@@ -5,12 +5,12 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
 public class AXmlResourceParser implements XmlResourceParser, AutoCloseable {
@@ -606,10 +606,6 @@ public class AXmlResourceParser implements XmlResourceParser, AutoCloseable {
 	@Override
 	public String getPrefix() {
 		return this.stringBlock.getString(this.mNamespaces.findPrefix(this.mNamespaceUri));
-	}
-
-	public OldXMLToken getPrevious() {
-		return this.oldXmlToken;
 	}
 
 	@Override

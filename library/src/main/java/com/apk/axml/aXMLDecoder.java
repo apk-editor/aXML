@@ -6,8 +6,8 @@ import android.util.TypedValue;
 import androidx.annotation.RequiresApi;
 
 import com.apk.axml.aXMLUtils.AXmlResourceParser;
-import com.apk.axml.serializables.ResEntry;
 import com.apk.axml.aXMLUtils.Utils;
+import com.apk.axml.serializables.ResEntry;
 import com.apk.axml.serializables.XMLEntry;
 
 import org.xmlpull.v1.XmlPullParser;
