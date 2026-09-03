@@ -143,14 +143,18 @@ public class APKInfoFragment extends Fragment {
                     if (mAPKParser.getVersionCode() != null && mAPKParser.getVersionName() != null) {
                         apkInfoEntries.add(new APKInfoEntry(null, "Version", mAPKParser.getVersionName() + " (" + mAPKParser.getVersionCode() + ")", false));
                     }
-                    if (mAPKParser.getCompiledSDKVersion() != null) {
-                        apkInfoEntries.add(new APKInfoEntry(null, "Compiled SDK", sdkToAndroidVersion(Integer.parseInt(mAPKParser.getCompiledSDKVersion())), false));
-                    }
-                    if (mAPKParser.getMinSDKVersion() != null) {
-                        apkInfoEntries.add(new APKInfoEntry(null, "Min. SDK", sdkToAndroidVersion(Integer.parseInt(mAPKParser.getMinSDKVersion())), false));
-                    }
-                    if (mAPKParser.getTargetSDKVersion() != null) {
-                        apkInfoEntries.add(new APKInfoEntry(null, "Target SDK", sdkToAndroidVersion(Integer.parseInt(mAPKParser.getTargetSDKVersion())), false));
+                    try {
+                        if (mAPKParser.getCompiledSDKVersion() != null) {
+                            apkInfoEntries.add(new APKInfoEntry(null, "Compiled SDK", sdkToAndroidVersion(Integer.parseInt(mAPKParser.getCompiledSDKVersion())), false));
+                        }
+                        if (mAPKParser.getMinSDKVersion() != null) {
+                            apkInfoEntries.add(new APKInfoEntry(null, "Min. SDK", sdkToAndroidVersion(Integer.parseInt(mAPKParser.getMinSDKVersion())), false));
+                        }
+                        if (mAPKParser.getTargetSDKVersion() != null) {
+                            apkInfoEntries.add(new APKInfoEntry(null, "Target SDK", sdkToAndroidVersion(Integer.parseInt(mAPKParser.getTargetSDKVersion())), false));
+                        }
+                    } catch (NumberFormatException e) {
+                        // To-do: Unsupported values
                     }
                     if (mAPKParser.getAPKSize() != Integer.MIN_VALUE) {
                         apkInfoEntries.add(new APKInfoEntry(null, "Size", getAPKSize(mAPKParser.getAPKSize()), false));
