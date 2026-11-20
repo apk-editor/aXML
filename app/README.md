@@ -8,7 +8,7 @@
 
 ## 📦 Downloads
 
-Get the APK from [Downloads Section](https://github.com/apk-editor/aXML/tree/master/app/downloads).
+Get the APK from [GitHub actions](https://github.com/apk-editor/aXML/actions).
 
 ---
 
